@@ -35,35 +35,35 @@ Cada milestone: branch própria → PR para `develop` → merge → próxima bra
 ### Entregas
 
 #### Projeto
-- [ ] `npx create-next-app@latest` com TypeScript, Tailwind, App Router
-- [ ] Configurar `tsconfig.json` com `strict: true` e alias `@/`
-- [ ] Instalar dependências: `@supabase/supabase-js`, `@supabase/ssr`, `sonner`, `lucide-react`
-- [ ] Configurar `.env.local` com variáveis do Supabase
-- [ ] `.gitignore` incluindo `.env*.local`
+- [x] `npx create-next-app@latest` com TypeScript, Tailwind, App Router
+- [x] Configurar `tsconfig.json` com `strict: true` e alias `@/`
+- [x] Instalar dependências: `@supabase/supabase-js`, `@supabase/ssr`, `sonner`, `lucide-react`
+- [x] Configurar `.env.local` com variáveis do Supabase
+- [x] `.gitignore` incluindo `.env*.local`
 
 #### Supabase
 - [ ] Criar projeto no Supabase
-- [ ] `lib/supabase/client.ts` — browser client
-- [ ] `lib/supabase/server.ts` — server component client
-- [ ] `lib/supabase/middleware.ts` — refresh de sessão
-- [ ] `middleware.ts` na raiz — proteção de rotas `/dashboard/*`
+- [x] `lib/supabase/client.ts` — browser client
+- [x] `lib/supabase/server.ts` — server component client
+- [x] `lib/supabase/middleware.ts` — refresh de sessão
+- [x] `proxy.ts` na raiz — proteção de rotas `/dashboard/*` (Next.js 16 usa `proxy.ts`)
 
 #### shadcn/ui
-- [ ] `npx shadcn@latest init` (tema dark, cor base slate)
-- [ ] Instalar componentes base: `button`, `input`, `label`, `card`, `badge`, `dropdown-menu`, `dialog`, `sheet`, `skeleton`, `separator`, `avatar`, `tooltip`
+- [x] `npx shadcn@latest init` (tema dark, cor base slate)
+- [x] Instalar componentes base: `button`, `input`, `label`, `card`, `badge`, `dropdown-menu`, `dialog`, `sheet`, `skeleton`, `separator`, `avatar`, `tooltip`
 
 #### Layout Base
-- [ ] `app/layout.tsx` — root layout com `<Toaster />` (sonner)
-- [ ] `app/(dashboard)/layout.tsx` — layout com Sidebar + Header
-- [ ] `components/shared/sidebar.tsx` — sidebar fixa 240px, links de navegação, logo
-- [ ] `components/shared/header.tsx` — breadcrumb + avatar do usuário
-- [ ] `types/index.ts` — tipos globais: `Workspace`, `Lead`, `Deal`, `Activity`, `Member`, `Stage`
-- [ ] Página placeholder para cada rota: `/dashboard`, `/leads`, `/pipeline`, `/settings`
+- [x] `app/layout.tsx` — root layout com `<Toaster />` (sonner)
+- [x] `app/(dashboard)/layout.tsx` — layout com Sidebar + Header
+- [x] `components/shared/sidebar.tsx` — sidebar fixa 240px, links de navegação, logo
+- [x] `components/shared/header.tsx` — breadcrumb + avatar do usuário
+- [x] `types/index.ts` — tipos globais: `Workspace`, `Lead`, `Deal`, `Activity`, `Member`, `Stage`
+- [x] Página placeholder para cada rota: `/dashboard`, `/leads`, `/pipeline`, `/settings`
 
 #### Verificação
-- [ ] `npm run dev` sobe sem erros
-- [ ] Layout com sidebar e header renderiza em `/dashboard`
-- [ ] TypeScript compila sem erros (`npm run build`)
+- [x] `npm run dev` sobe sem erros
+- [x] Layout com sidebar e header renderiza em `/dashboard`
+- [x] TypeScript compila sem erros (`npm run build`)
 
 ### Commit Final
 ```
