@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(cd \"C:\\\\Users\\\\luis2\\\\OneDrive\\\\Desktop\\\\claude3\" ; $env:NEXT_PUBLIC_SUPABASE_URL=\"https://placeholder.supabase.co\" ; $env:NEXT_PUBLIC_SUPABASE_ANON_KEY=\"placeholder\" ; Start-Process -NoNewWindow -FilePath \"npm\" -ArgumentList \"run\",\"dev\" -RedirectStandardOutput \"$env:TEMP\\\\dev-out.txt\" -RedirectStandardError \"$env:TEMP\\\\dev-err.txt\" ; Start-Sleep -Seconds 10 ; Get-Content \"$env:TEMP\\\\dev-out.txt\",\"$env:TEMP\\\\dev-err.txt\" -ErrorAction SilentlyContinue | Select-Object -First 30)"
+    ]
+  }
+}

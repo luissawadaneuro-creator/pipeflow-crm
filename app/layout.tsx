@@ -1,23 +1,37 @@
-import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import type { Metadata } from 'next'
+import { Geist, Geist_Mono } from 'next/font/google'
+import { Toaster } from 'sonner'
+import './globals.css'
 
-import './globals.css';
+const geistSans = Geist({
+  variable: '--font-geist-sans',
+  subsets: ['latin'],
+})
 
-const inter = Inter({ subsets: ['latin'] });
+const geistMono = Geist_Mono({
+  variable: '--font-geist-mono',
+  subsets: ['latin'],
+})
 
 export const metadata: Metadata = {
   title: 'PipeFlow CRM',
-  description: 'Sales pipeline management for small businesses',
-};
+  description: 'CRM visual para times de vendas e freelancers.',
+}
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
-}>): React.JSX.Element {
+  children: React.ReactNode
+}>) {
   return (
-    <html lang="pt-BR">
-      <body className={inter.className}>{children}</body>
+    <html
+      lang="pt-BR"
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+    >
+      <body className="min-h-full flex flex-col">
+        {children}
+        <Toaster richColors position="top-right" />
+      </body>
     </html>
-  );
+  )
 }
