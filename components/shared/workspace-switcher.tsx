@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils'
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -43,41 +44,45 @@ export function WorkspaceSwitcher() {
         align="start"
         sideOffset={4}
       >
-        <DropdownMenuLabel className="text-xs text-muted-foreground font-normal px-2 py-1.5">
-          Workspaces
-        </DropdownMenuLabel>
+        <DropdownMenuGroup>
+          <DropdownMenuLabel className="text-xs text-muted-foreground font-normal px-2 py-1.5">
+            Workspaces
+          </DropdownMenuLabel>
 
-        {FAKE_WORKSPACES.map((ws) => (
-          <DropdownMenuItem
-            key={ws.id}
-            onClick={() => setActiveId(ws.id)}
-            className="flex items-center justify-between px-2 py-2 cursor-pointer"
-          >
-            <div className="flex items-center gap-2 min-w-0">
-              <span className="flex items-center justify-center w-6 h-6 rounded-md bg-secondary text-foreground text-xs font-bold shrink-0">
-                {ws.name.charAt(0)}
-              </span>
-              <span className="truncate text-sm">{ws.name}</span>
-            </div>
-            <div className="flex items-center gap-2 shrink-0">
-              {ws.plan === 'pro' && (
-                <Badge className="h-4 px-1.5 text-[10px] bg-primary/20 text-primary border-0 font-semibold">
-                  PRO
-                </Badge>
-              )}
-              {ws.id === activeId && (
-                <Check className="w-3.5 h-3.5 text-primary" />
-              )}
-            </div>
-          </DropdownMenuItem>
-        ))}
+          {FAKE_WORKSPACES.map((ws) => (
+            <DropdownMenuItem
+              key={ws.id}
+              onClick={() => setActiveId(ws.id)}
+              className="flex items-center justify-between px-2 py-2 cursor-pointer"
+            >
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="flex items-center justify-center w-6 h-6 rounded-md bg-secondary text-foreground text-xs font-bold shrink-0">
+                  {ws.name.charAt(0)}
+                </span>
+                <span className="truncate text-sm">{ws.name}</span>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                {ws.plan === 'pro' && (
+                  <Badge className="h-4 px-1.5 text-[10px] bg-primary/20 text-primary border-0 font-semibold">
+                    PRO
+                  </Badge>
+                )}
+                {ws.id === activeId && (
+                  <Check className="w-3.5 h-3.5 text-primary" />
+                )}
+              </div>
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuGroup>
 
         <DropdownMenuSeparator className="bg-border" />
 
-        <DropdownMenuItem className="flex items-center gap-2 px-2 py-2 cursor-pointer text-muted-foreground hover:text-foreground">
-          <Plus className="w-4 h-4" />
-          <span className="text-sm">Criar workspace</span>
-        </DropdownMenuItem>
+        <DropdownMenuGroup>
+          <DropdownMenuItem className="flex items-center gap-2 px-2 py-2 cursor-pointer text-muted-foreground hover:text-foreground">
+            <Plus className="w-4 h-4" />
+            <span className="text-sm">Criar workspace</span>
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>
   )

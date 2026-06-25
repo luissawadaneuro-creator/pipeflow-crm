@@ -6,8 +6,8 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
@@ -86,21 +86,25 @@ export function Header({ onMenuClick }: HeaderProps) {
           </DropdownMenuTrigger>
 
           <DropdownMenuContent align="end" className="w-56 bg-popover border-border" sideOffset={6}>
-            <DropdownMenuLabel className="pb-0">
+            {/* User info — plain div, not a GroupLabel */}
+            <div className="px-2 py-2 border-b border-border mb-1">
               <p className="text-sm font-medium text-foreground">{FAKE_USER.name}</p>
-              <p className="text-xs text-muted-foreground font-normal mt-0.5">{FAKE_USER.email}</p>
-            </DropdownMenuLabel>
+              <p className="text-xs text-muted-foreground mt-0.5">{FAKE_USER.email}</p>
+            </div>
+            <DropdownMenuGroup>
+              <DropdownMenuItem className="cursor-pointer text-sm">
+                Meu perfil
+              </DropdownMenuItem>
+              <DropdownMenuItem className="cursor-pointer text-sm">
+                Configurações
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
             <DropdownMenuSeparator className="bg-border" />
-            <DropdownMenuItem className="cursor-pointer text-sm">
-              Meu perfil
-            </DropdownMenuItem>
-            <DropdownMenuItem className="cursor-pointer text-sm">
-              Configurações
-            </DropdownMenuItem>
-            <DropdownMenuSeparator className="bg-border" />
-            <DropdownMenuItem className="cursor-pointer text-sm text-destructive focus:text-destructive">
-              Sair
-            </DropdownMenuItem>
+            <DropdownMenuGroup>
+              <DropdownMenuItem className="cursor-pointer text-sm text-destructive focus:text-destructive">
+                Sair
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
