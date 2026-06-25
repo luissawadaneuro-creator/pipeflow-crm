@@ -198,17 +198,18 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 ## Development Milestones
 
-| # | Milestone | Description |
-|---|-----------|-------------|
-| M1 | Setup | Next.js + Tailwind + shadcn/ui + Supabase init |
-| M2 | Auth | Login, signup, reset-password, middleware |
-| M3 | Workspaces | Create, switch, RLS setup |
-| M4 | Leads | CRUD, list with filters, detail page |
-| M5 | Pipeline | Kanban board with drag-and-drop |
-| M6 | Activities | Timeline per lead (call/email/meeting/note) |
-| M7 | Dashboard | Metrics cards + funnel chart |
-| M8 | Invites | Email invites via Resend |
-| M9 | Stripe | Plans, checkout, webhook, portal |
-| M10 | Landing | Public marketing page |
+| # | Milestone | Description | Status |
+|---|-----------|-------------|--------|
+| M1 | Setup | Next.js + Tailwind + shadcn/ui + Supabase init | ✅ Done |
+| M1.5 | App Shell | Sidebar responsiva, header, workspace switcher, dark mode | ✅ Done |
+| M2 | Auth | Login, signup, reset-password, middleware | ⏳ Pending |
+| M3 | Workspaces | Create, switch, RLS setup | ⏳ Pending |
+| M4 | Leads | CRUD, list with filters, detail page | ⏳ Pending |
+| M5 | Pipeline | Kanban board with drag-and-drop | ⏳ Pending |
+| M6 | Activities | Timeline per lead (call/email/meeting/note) | ⏳ Pending |
+| M7 | Dashboard | Metrics cards + funnel chart | ⏳ Pending |
+| M8 | Invites | Email invites via Resend | ⏳ Pending |
+| M9 | Stripe | Plans, checkout, webhook, portal | ⏳ Pending |
+| M10 | Landing | Public marketing page | ⏳ Pending |
 
 Work through milestones in order. Complete and test each before advancing.
