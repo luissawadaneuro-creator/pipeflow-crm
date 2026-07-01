@@ -113,7 +113,7 @@ export function Sidebar({ mobileOpen = false, onClose }: SidebarProps) {
         {/* Backdrop */}
         <div
           className={cn(
-            'fixed inset-0 z-40 bg-black/60 backdrop-blur-sm transition-opacity lg:hidden',
+            'fixed inset-0 z-[51] bg-black/60 backdrop-blur-sm transition-opacity lg:hidden',
             mobileOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
           )}
           onClick={onClose}
@@ -122,7 +122,7 @@ export function Sidebar({ mobileOpen = false, onClose }: SidebarProps) {
         {/* Drawer panel */}
         <aside
           className={cn(
-            'fixed left-0 top-0 h-full w-72 bg-card border-r border-border z-50 flex flex-col transition-transform duration-300 ease-in-out lg:hidden',
+            'fixed left-0 top-0 h-full w-64 bg-card border-r border-border z-[52] flex flex-col transition-transform duration-300 ease-in-out lg:hidden',
             mobileOpen ? 'translate-x-0' : '-translate-x-full'
           )}
         >
