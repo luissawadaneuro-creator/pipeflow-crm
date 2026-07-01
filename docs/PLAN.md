@@ -80,28 +80,29 @@ feat: project setup — Next.js 14, Tailwind, shadcn/ui, Supabase clients, base 
 ### Entregas
 
 #### UI (construir primeiro com dados estáticos)
-- [ ] `app/(auth)/login/page.tsx` — form de e-mail + senha, link para cadastro
-- [ ] `app/(auth)/signup/page.tsx` — form de nome + e-mail + senha, link para login
-- [ ] `app/(auth)/reset-password/page.tsx` — form de e-mail para recuperação
+- [x] `app/(auth)/login/page.tsx` — form de e-mail + senha, link para cadastro
+- [x] `app/(auth)/signup/page.tsx` — form de nome + e-mail + senha, link para login
+- [x] `app/(auth)/reset-password/page.tsx` — form de e-mail para recuperação
 - [ ] `app/(auth)/update-password/page.tsx` — form de nova senha (via magic link)
-- [ ] Layout `app/(auth)/layout.tsx` — página centralizada sem sidebar
+- [x] Layout `app/(auth)/layout.tsx` — página centralizada sem sidebar
+- [x] `app/(auth)/onboarding/page.tsx` — criação do primeiro workspace com indicador de progresso
 
 #### Lógica de Auth
 - [ ] Server Actions em `app/(auth)/login/actions.ts` — `signInWithPassword`
 - [ ] Server Actions em `app/(auth)/signup/actions.ts` — `signUp`
 - [ ] Server Actions em `app/(auth)/reset-password/actions.ts` — `resetPasswordForEmail`
-- [ ] Redirecionamento pós-login para `/dashboard`
-- [ ] Redirecionamento pós-logout para `/login`
+- [x] Redirecionamento pós-login para `/dashboard` (fake, aguarda Supabase)
+- [x] Redirecionamento pós-logout para `/login` (botão Sair no header)
 - [ ] Logout no header via `supabase.auth.signOut()`
 
 #### Proteção de Rotas
-- [ ] `middleware.ts` bloqueia `/dashboard/*` sem sessão → redireciona para `/login`
-- [ ] Usuário logado em `/login` → redireciona para `/dashboard`
+- [x] `middleware.ts` bloqueia `/dashboard/*` sem sessão → redireciona para `/login` (ativo quando Supabase configurado)
+- [x] Usuário logado em `/login` → redireciona para `/dashboard` (ativo quando Supabase configurado)
 
 #### Verificação
 - [ ] Cadastro cria usuário no Supabase Auth
-- [ ] Login redireciona para `/dashboard`
-- [ ] Acesso a `/dashboard` sem login redireciona para `/login`
+- [x] Login redireciona para `/dashboard`
+- [ ] Acesso a `/dashboard` sem login redireciona para `/login` (aguarda Supabase)
 - [ ] Reset de senha envia e-mail via Supabase
 
 ### Commit Final

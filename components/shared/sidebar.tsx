@@ -95,7 +95,7 @@ export function Sidebar({ mobileOpen = false, onClose }: SidebarProps) {
       {/* Footer */}
       <div className="px-3 py-4 shrink-0 border-t border-border">
         <p className="px-3 text-[11px] text-muted-foreground">
-          v0.1.0 · M2 em progresso
+          v0.2.0 · Auth UI
         </p>
       </div>
     </div>

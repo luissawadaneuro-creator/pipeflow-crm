@@ -1,6 +1,6 @@
 'use client'
 
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { Menu, Bell, ChevronDown } from 'lucide-react'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import {
@@ -32,6 +32,7 @@ interface HeaderProps {
 
 export function Header({ onMenuClick }: HeaderProps) {
   const pathname = usePathname()
+  const router = useRouter()
 
   // Resolve breadcrumb: match longest prefix
   const breadcrumb =
@@ -101,7 +102,10 @@ export function Header({ onMenuClick }: HeaderProps) {
             </DropdownMenuGroup>
             <DropdownMenuSeparator className="bg-border" />
             <DropdownMenuGroup>
-              <DropdownMenuItem className="cursor-pointer text-sm text-destructive focus:text-destructive">
+              <DropdownMenuItem
+                className="cursor-pointer text-sm text-destructive focus:text-destructive"
+                onSelect={() => router.push('/login')}
+              >
                 Sair
               </DropdownMenuItem>
             </DropdownMenuGroup>
