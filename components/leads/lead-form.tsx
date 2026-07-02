@@ -1,0 +1,247 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { Loader2 } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { MOCK_MEMBERS } from '@/lib/mock-leads'
+import type { Lead, LeadStatus } from '@/types'
+
+const STATUS_LABELS: Record<LeadStatus, string> = {
+  new: 'Novo',
+  contacted: 'Contatado',
+  qualified: 'Qualificado',
+  lost: 'Perdido',
+}
+
+interface FormFields {
+  name: string
+  email: string
+  phone: string
+  company: string
+  role: string
+  status: LeadStatus
+  assigned_to: string
+}
+
+interface FieldErrors {
+  name?: string
+  email?: string
+}
+
+function validate(fields: FormFields): FieldErrors {
+  const errors: FieldErrors = {}
+  if (!fields.name.trim()) errors.name = 'Nome obrigatório'
+  if (fields.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fields.email)) {
+    errors.email = 'E-mail inválido'
+  }
+  return errors
+}
+
+interface LeadFormProps {
+  open: boolean
+  onClose: () => void
+  onSave: (data: FormFields) => void
+  lead?: Lead | null
+}
+
+export function LeadForm({ open, onClose, onSave, lead }: LeadFormProps) {
+  const isEditing = !!lead
+
+  const emptyFields: FormFields = {
+    name: '',
+    email: '',
+    phone: '',
+    company: '',
+    role: '',
+    status: 'new',
+    assigned_to: MOCK_MEMBERS[0],
+  }
+
+  const [fields, setFields] = useState<FormFields>(emptyFields)
+  const [errors, setErrors] = useState<FieldErrors>({})
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    if (open) {
+      setFields(
+        lead
+          ? {
+              name: lead.name,
+              email: lead.email ?? '',
+              phone: lead.phone ?? '',
+              company: lead.company ?? '',
+              role: lead.role ?? '',
+              status: lead.status,
+              assigned_to: lead.assigned_to ?? MOCK_MEMBERS[0],
+            }
+          : emptyFields
+      )
+      setErrors({})
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, lead])
+
+  function set<K extends keyof FormFields>(key: K, value: FormFields[K]) {
+    setFields((prev) => ({ ...prev, [key]: value }))
+    if (key in errors) setErrors((prev) => ({ ...prev, [key]: undefined }))
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    const errs = validate(fields)
+    setErrors(errs)
+    if (Object.keys(errs).length > 0) return
+
+    setLoading(true)
+    await new Promise((r) => setTimeout(r, 700))
+    setLoading(false)
+    onSave(fields)
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={(v) => { if (!v) onClose() }}>
+      <DialogContent className="sm:max-w-lg bg-card border-border">
+        <DialogHeader>
+          <DialogTitle>{isEditing ? 'Editar lead' : 'Novo lead'}</DialogTitle>
+        </DialogHeader>
+
+        <form onSubmit={handleSubmit} noValidate>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 py-4">
+            {/* Nome */}
+            <div className="sm:col-span-2 space-y-1.5">
+              <Label htmlFor="lf-name">Nome *</Label>
+              <Input
+                id="lf-name"
+                value={fields.name}
+                onChange={(e) => set('name', e.target.value)}
+                placeholder="João Silva"
+                disabled={loading}
+                className={errors.name ? 'border-destructive' : ''}
+              />
+              {errors.name && <p className="text-xs text-destructive">{errors.name}</p>}
+            </div>
+
+            {/* E-mail */}
+            <div className="space-y-1.5">
+              <Label htmlFor="lf-email">E-mail</Label>
+              <Input
+                id="lf-email"
+                type="email"
+                value={fields.email}
+                onChange={(e) => set('email', e.target.value)}
+                placeholder="joao@empresa.com"
+                disabled={loading}
+                className={errors.email ? 'border-destructive' : ''}
+              />
+              {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
+            </div>
+
+            {/* Telefone */}
+            <div className="space-y-1.5">
+              <Label htmlFor="lf-phone">Telefone</Label>
+              <Input
+                id="lf-phone"
+                value={fields.phone}
+                onChange={(e) => set('phone', e.target.value)}
+                placeholder="(11) 99999-9999"
+                disabled={loading}
+              />
+            </div>
+
+            {/* Empresa */}
+            <div className="space-y-1.5">
+              <Label htmlFor="lf-company">Empresa</Label>
+              <Input
+                id="lf-company"
+                value={fields.company}
+                onChange={(e) => set('company', e.target.value)}
+                placeholder="Acme Corp"
+                disabled={loading}
+              />
+            </div>
+
+            {/* Cargo */}
+            <div className="space-y-1.5">
+              <Label htmlFor="lf-role">Cargo</Label>
+              <Input
+                id="lf-role"
+                value={fields.role}
+                onChange={(e) => set('role', e.target.value)}
+                placeholder="CEO"
+                disabled={loading}
+              />
+            </div>
+
+            {/* Status */}
+            <div className="space-y-1.5">
+              <Label>Status</Label>
+              <Select
+                value={fields.status}
+                onValueChange={(v) => set('status', v as LeadStatus)}
+                disabled={loading}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue>{(v: string) => STATUS_LABELS[v as LeadStatus] ?? v}</SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="new">Novo</SelectItem>
+                  <SelectItem value="contacted">Contatado</SelectItem>
+                  <SelectItem value="qualified">Qualificado</SelectItem>
+                  <SelectItem value="lost">Perdido</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Responsável */}
+            <div className="space-y-1.5">
+              <Label>Responsável</Label>
+              <Select
+                value={fields.assigned_to}
+                onValueChange={(v) => set('assigned_to', v ?? MOCK_MEMBERS[0])}
+                disabled={loading}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue>{(v: string) => v || MOCK_MEMBERS[0]}</SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {MOCK_MEMBERS.map((m) => (
+                    <SelectItem key={m} value={m}>{m}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={onClose} disabled={loading}>
+              Cancelar
+            </Button>
+            <Button type="submit" disabled={loading}>
+              {loading ? (
+                <><Loader2 className="w-4 h-4 mr-2 animate-spin" />{isEditing ? 'Salvando…' : 'Criando…'}</>
+              ) : (
+                isEditing ? 'Salvar alterações' : 'Criar lead'
+              )}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  )
+}
