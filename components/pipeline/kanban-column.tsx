@@ -9,59 +9,45 @@ import type { Deal, DealStage } from '@/types'
 
 export const STAGE_CONFIG: Record<DealStage, {
   label: string
-  accent: string        // border-t color class
-  badge: string         // badge bg+text
-  headerGlow: string    // subtle bg tint
-  dot: string           // dot color
-  glowColor: string     // rgba for box-shadow glow on hover
+  color: string    // CSS color value for dot + accents
+  badgeBg: string  // inline background for badge
+  glowColor: string // rgba for card hover shadow
 }> = {
   new_lead: {
     label: 'Novo Lead',
-    accent: 'border-t-slate-500',
-    badge: 'bg-slate-700 text-slate-300',
-    headerGlow: 'bg-slate-500/5',
-    dot: 'bg-slate-400',
-    glowColor: 'rgba(148,163,184,0.2)',
+    color: '#5B7FFF',
+    badgeBg: 'rgba(91,127,255,0.12)',
+    glowColor: 'rgba(91,127,255,0.18)',
   },
   contacted: {
     label: 'Contatado',
-    accent: 'border-t-blue-500',
-    badge: 'bg-blue-500/20 text-blue-300',
-    headerGlow: 'bg-blue-500/5',
-    dot: 'bg-blue-400',
-    glowColor: 'rgba(59,130,246,0.2)',
+    color: '#00B4D8',
+    badgeBg: 'rgba(0,180,216,0.12)',
+    glowColor: 'rgba(0,180,216,0.18)',
   },
   proposal_sent: {
     label: 'Proposta Enviada',
-    accent: 'border-t-violet-500',
-    badge: 'bg-violet-500/20 text-violet-300',
-    headerGlow: 'bg-violet-500/5',
-    dot: 'bg-violet-400',
-    glowColor: 'rgba(139,92,246,0.2)',
+    color: '#CAFF33',
+    badgeBg: 'rgba(202,255,51,0.1)',
+    glowColor: 'rgba(202,255,51,0.14)',
   },
   negotiation: {
     label: 'Negociação',
-    accent: 'border-t-amber-500',
-    badge: 'bg-amber-500/20 text-amber-300',
-    headerGlow: 'bg-amber-500/5',
-    dot: 'bg-amber-400',
-    glowColor: 'rgba(245,158,11,0.2)',
+    color: '#FF6B35',
+    badgeBg: 'rgba(255,107,53,0.12)',
+    glowColor: 'rgba(255,107,53,0.18)',
   },
   won: {
     label: 'Fechado Ganho',
-    accent: 'border-t-emerald-500',
-    badge: 'bg-emerald-500/20 text-emerald-300',
-    headerGlow: 'bg-emerald-500/5',
-    dot: 'bg-emerald-400',
-    glowColor: 'rgba(16,185,129,0.2)',
+    color: '#2ED573',
+    badgeBg: 'rgba(46,213,115,0.12)',
+    glowColor: 'rgba(46,213,115,0.18)',
   },
   lost: {
     label: 'Fechado Perdido',
-    accent: 'border-t-red-500',
-    badge: 'bg-red-500/20 text-red-300',
-    headerGlow: 'bg-red-500/5',
-    dot: 'bg-red-400',
-    glowColor: 'rgba(239,68,68,0.2)',
+    color: '#FF4757',
+    badgeBg: 'rgba(255,71,87,0.12)',
+    glowColor: 'rgba(255,71,87,0.18)',
   },
 }
 
@@ -96,40 +82,69 @@ export function KanbanColumn({ stage, deals, onAddDeal, onEditDeal }: KanbanColu
       className="flex flex-col w-72 shrink-0 h-full animate-column-enter"
       style={{ animationDelay: `${staggerIndex * 60}ms` }}
     >
-      {/* Column header with glassmorphism */}
+      {/* Column header */}
       <div
-        className={cn(
-          'rounded-xl border-x border-b border-t-2 p-3 mb-3',
-          cfg.accent,
-        )}
+        className="rounded-lg p-3 mb-3"
         style={{
-          background: 'rgba(15,23,42,0.7)',
-          backdropFilter: 'blur(12px)',
-          WebkitBackdropFilter: 'blur(12px)',
-          borderLeftColor: `rgba(var(--accent-lime-rgb), 0.07)`,
-          borderRightColor: `rgba(var(--accent-lime-rgb), 0.07)`,
-          borderBottomColor: `rgba(var(--accent-lime-rgb), 0.07)`,
+          background: 'var(--pf-surface)',
+          borderTop: `2px solid ${cfg.color}`,
+          borderLeft: '1px solid var(--pf-border)',
+          borderRight: '1px solid var(--pf-border)',
+          borderBottom: '1px solid var(--pf-border)',
         }}
       >
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <div className={cn('w-2 h-2 rounded-full', cfg.dot)} />
-            <span className="text-sm font-semibold text-foreground">{cfg.label}</span>
+            {/* Stage dot */}
+            <div
+              className="w-2 h-2 rounded-full shrink-0"
+              style={{ background: cfg.color }}
+            />
+            {/* Label in mono uppercase */}
+            <span
+              className="text-[11px] uppercase tracking-[0.12em] font-medium"
+              style={{
+                fontFamily: 'var(--font-ibm-plex-mono), monospace',
+                color: 'var(--pf-text-secondary)',
+              }}
+            >
+              {cfg.label}
+            </span>
           </div>
+
           <div className="flex items-center gap-1.5">
-            <span className={cn('text-xs font-medium px-1.5 py-0.5 rounded-full', cfg.badge)}>
+            {/* Count badge */}
+            <span
+              className="text-[10px] font-medium px-1.5 py-0.5 rounded"
+              style={{
+                fontFamily: 'var(--font-ibm-plex-mono), monospace',
+                background: cfg.badgeBg,
+                color: cfg.color,
+              }}
+            >
               {deals.length}
             </span>
             <button
               onClick={() => onAddDeal(stage)}
-              className="w-6 h-6 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-colors"
+              className="w-6 h-6 rounded flex items-center justify-center transition-colors"
+              style={{ color: 'var(--pf-text-muted)' }}
+              onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = 'var(--pf-text)')}
+              onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = 'var(--pf-text-muted)')}
               aria-label={`Adicionar negócio em ${cfg.label}`}
             >
               <Plus className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
-        <p className="text-xs font-mono text-muted-foreground">
+
+        {/* Total value */}
+        <p
+          className="text-[11px]"
+          style={{
+            fontFamily: 'var(--font-ibm-plex-mono), monospace',
+            color: totalValue > 0 ? cfg.color : 'var(--pf-text-muted)',
+          }}
+        >
           {totalValue > 0 ? formatBRL(totalValue) : '—'}
         </p>
       </div>
@@ -139,25 +154,41 @@ export function KanbanColumn({ stage, deals, onAddDeal, onEditDeal }: KanbanColu
         <div
           ref={setNodeRef}
           className={cn(
-            'flex-1 flex flex-col gap-2 rounded-xl min-h-[120px] transition-colors duration-150 p-1',
-            isOver && 'bg-primary/5 ring-1 ring-primary/20',
+            'flex-1 flex flex-col gap-2 rounded-lg min-h-[120px] transition-colors duration-150 p-1',
+            isOver && 'ring-1',
           )}
+          style={isOver ? {
+            background: 'rgba(202,255,51,0.03)',
+            outline: '1px solid rgba(202,255,51,0.2)',
+          } : undefined}
         >
           {deals.map(deal => (
             <DealCard
               key={deal.id}
               deal={deal}
               onEdit={onEditDeal}
+              stageColor={cfg.color}
               stageGlow={cfg.glowColor}
             />
           ))}
 
           {deals.length === 0 && (
-            <div className={cn(
-              'flex-1 rounded-lg border border-dashed border-border flex items-center justify-center min-h-[80px]',
-              isOver && 'border-primary/40 bg-primary/5',
-            )}>
-              <p className="text-xs text-muted-foreground/50">Arraste aqui</p>
+            <div
+              className="flex-1 rounded-lg border border-dashed flex items-center justify-center min-h-[80px]"
+              style={{
+                borderColor: isOver ? 'rgba(202,255,51,0.3)' : 'var(--pf-border)',
+                background: isOver ? 'rgba(202,255,51,0.03)' : 'transparent',
+              }}
+            >
+              <p
+                className="text-[10px] uppercase tracking-[0.1em]"
+                style={{
+                  fontFamily: 'var(--font-ibm-plex-mono), monospace',
+                  color: 'var(--pf-text-muted)',
+                }}
+              >
+                Arraste aqui
+              </p>
             </div>
           )}
         </div>

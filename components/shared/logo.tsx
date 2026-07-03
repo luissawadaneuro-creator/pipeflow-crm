@@ -7,29 +7,58 @@ interface LogoProps {
   className?: string
 }
 
-const sizeMap: Record<LogoSize, { text: string; line: string }> = {
-  sm: { text: 'text-base',  line: 'h-[2px] w-10 mt-0.5' },
-  md: { text: 'text-xl',    line: 'h-[2px] w-14 mt-1' },
-  lg: { text: 'text-3xl',   line: 'h-[2.5px] w-20 mt-1.5' },
+const sizeMap: Record<LogoSize, {
+  mark: string
+  markText: string
+  name: string
+  tag: string
+}> = {
+  sm: { mark: 'w-6 h-6 rounded-[4px] text-xs',  markText: 'text-xs',  name: 'text-sm',   tag: 'text-[9px]' },
+  md: { mark: 'w-8 h-8 rounded-[6px] text-sm',   markText: 'text-sm',  name: 'text-base', tag: 'text-[10px]' },
+  lg: { mark: 'w-10 h-10 rounded-[8px] text-base', markText: 'text-base', name: 'text-xl', tag: 'text-xs' },
 }
 
 export function Logo({ size = 'md', className }: LogoProps) {
-  const { text, line } = sizeMap[size]
+  const s = sizeMap[size]
 
   return (
-    <div className={cn('flex flex-col items-start select-none', className)}>
-      <span
-        className={cn('font-extrabold tracking-tight leading-none', text)}
-        style={{ fontFamily: 'var(--font-syne), sans-serif' }}
-      >
-        <span className="text-foreground">Pipe</span>
-        <span style={{ color: 'var(--accent-lime)' }}>Flow</span>
-      </span>
-      {/* Animated bottom line */}
+    <div className={cn('flex items-center gap-2.5 select-none', className)}>
+      {/* Square mark */}
       <div
-        className={cn('rounded-full origin-left animate-flow-pulse', line)}
-        style={{ background: 'var(--accent-lime)' }}
-      />
+        className={cn(
+          'flex items-center justify-center shrink-0 font-extrabold leading-none',
+          s.mark,
+        )}
+        style={{
+          background: 'var(--pf-accent)',
+          color: 'var(--pf-bg)',
+          fontFamily: 'var(--font-syne), sans-serif',
+        }}
+      >
+        P
+      </div>
+
+      {/* Wordmark */}
+      <div className="flex flex-col leading-none gap-0.5">
+        <span
+          className={cn('font-semibold tracking-tight leading-none', s.name)}
+          style={{
+            fontFamily: 'var(--font-syne), sans-serif',
+            color: 'var(--pf-text)',
+          }}
+        >
+          PipeFlow
+        </span>
+        <span
+          className={cn('uppercase tracking-[0.15em] leading-none', s.tag)}
+          style={{
+            fontFamily: 'var(--font-ibm-plex-mono), monospace',
+            color: 'var(--pf-text-muted)',
+          }}
+        >
+          CRM
+        </span>
+      </div>
     </div>
   )
 }
