@@ -13,6 +13,7 @@ export const STAGE_CONFIG: Record<DealStage, {
   badge: string         // badge bg+text
   headerGlow: string    // subtle bg tint
   dot: string           // dot color
+  glowColor: string     // rgba for box-shadow glow on hover
 }> = {
   new_lead: {
     label: 'Novo Lead',
@@ -20,6 +21,7 @@ export const STAGE_CONFIG: Record<DealStage, {
     badge: 'bg-slate-700 text-slate-300',
     headerGlow: 'bg-slate-500/5',
     dot: 'bg-slate-400',
+    glowColor: 'rgba(148,163,184,0.2)',
   },
   contacted: {
     label: 'Contatado',
@@ -27,6 +29,7 @@ export const STAGE_CONFIG: Record<DealStage, {
     badge: 'bg-blue-500/20 text-blue-300',
     headerGlow: 'bg-blue-500/5',
     dot: 'bg-blue-400',
+    glowColor: 'rgba(59,130,246,0.2)',
   },
   proposal_sent: {
     label: 'Proposta Enviada',
@@ -34,6 +37,7 @@ export const STAGE_CONFIG: Record<DealStage, {
     badge: 'bg-violet-500/20 text-violet-300',
     headerGlow: 'bg-violet-500/5',
     dot: 'bg-violet-400',
+    glowColor: 'rgba(139,92,246,0.2)',
   },
   negotiation: {
     label: 'Negociação',
@@ -41,6 +45,7 @@ export const STAGE_CONFIG: Record<DealStage, {
     badge: 'bg-amber-500/20 text-amber-300',
     headerGlow: 'bg-amber-500/5',
     dot: 'bg-amber-400',
+    glowColor: 'rgba(245,158,11,0.2)',
   },
   won: {
     label: 'Fechado Ganho',
@@ -48,6 +53,7 @@ export const STAGE_CONFIG: Record<DealStage, {
     badge: 'bg-emerald-500/20 text-emerald-300',
     headerGlow: 'bg-emerald-500/5',
     dot: 'bg-emerald-400',
+    glowColor: 'rgba(16,185,129,0.2)',
   },
   lost: {
     label: 'Fechado Perdido',
@@ -55,8 +61,11 @@ export const STAGE_CONFIG: Record<DealStage, {
     badge: 'bg-red-500/20 text-red-300',
     headerGlow: 'bg-red-500/5',
     dot: 'bg-red-400',
+    glowColor: 'rgba(239,68,68,0.2)',
   },
 }
+
+const STAGE_ORDER: DealStage[] = ['new_lead', 'contacted', 'proposal_sent', 'negotiation', 'won', 'lost']
 
 function formatBRL(value: number) {
   return new Intl.NumberFormat('pt-BR', {
@@ -80,15 +89,28 @@ export function KanbanColumn({ stage, deals, onAddDeal, onEditDeal }: KanbanColu
 
   const totalValue = deals.reduce((sum, d) => sum + d.value, 0)
   const dealIds = deals.map(d => d.id)
+  const staggerIndex = STAGE_ORDER.indexOf(stage)
 
   return (
-    <div className="flex flex-col w-72 shrink-0 h-full">
-      {/* Column header */}
-      <div className={cn(
-        'rounded-xl border border-border border-t-2 p-3 mb-3',
-        cfg.accent,
-        cfg.headerGlow,
-      )}>
+    <div
+      className="flex flex-col w-72 shrink-0 h-full animate-column-enter"
+      style={{ animationDelay: `${staggerIndex * 60}ms` }}
+    >
+      {/* Column header with glassmorphism */}
+      <div
+        className={cn(
+          'rounded-xl border-x border-b border-t-2 p-3 mb-3',
+          cfg.accent,
+        )}
+        style={{
+          background: 'rgba(15,23,42,0.7)',
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
+          borderLeftColor: `rgba(var(--accent-lime-rgb), 0.07)`,
+          borderRightColor: `rgba(var(--accent-lime-rgb), 0.07)`,
+          borderBottomColor: `rgba(var(--accent-lime-rgb), 0.07)`,
+        }}
+      >
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             <div className={cn('w-2 h-2 rounded-full', cfg.dot)} />
@@ -122,7 +144,12 @@ export function KanbanColumn({ stage, deals, onAddDeal, onEditDeal }: KanbanColu
           )}
         >
           {deals.map(deal => (
-            <DealCard key={deal.id} deal={deal} onEdit={onEditDeal} />
+            <DealCard
+              key={deal.id}
+              deal={deal}
+              onEdit={onEditDeal}
+              stageGlow={cfg.glowColor}
+            />
           ))}
 
           {deals.length === 0 && (

@@ -18,7 +18,9 @@ export default function DashboardLayout({
       {/* Desktop offset — matches sidebar width */}
       <div className="flex flex-col flex-1 lg:ml-60 min-w-0">
         <Header onMenuClick={toggle} />
-        <main className="flex-1 overflow-auto p-4 lg:p-6">{children}</main>
+        <main className="flex-1 overflow-auto p-4 lg:p-6">
+          <div className="animate-fade-slide-up h-full">{children}</div>
+        </main>
       </div>
     </div>
   )

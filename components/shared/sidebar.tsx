@@ -7,11 +7,11 @@ import {
   Users,
   KanbanSquare,
   Settings,
-  Zap,
   X,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { WorkspaceSwitcher } from '@/components/shared/workspace-switcher'
+import { Logo } from '@/components/shared/logo'
 import { Separator } from '@/components/ui/separator'
 
 const NAV_LINKS = [
@@ -33,14 +33,7 @@ export function Sidebar({ mobileOpen = false, onClose }: SidebarProps) {
     <div className="flex flex-col h-full">
       {/* Logo + close button (mobile) */}
       <div className="flex items-center justify-between px-4 py-4 shrink-0">
-        <div className="flex items-center gap-2">
-          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary">
-            <Zap className="w-4 h-4 text-primary-foreground" />
-          </div>
-          <span className="font-bold text-foreground tracking-wide">
-            PipeFlow
-          </span>
-        </div>
+        <Logo size="md" />
         {/* Only visible on mobile */}
         <button
           onClick={onClose}
@@ -74,16 +67,26 @@ export function Sidebar({ mobileOpen = false, onClose }: SidebarProps) {
               href={href}
               onClick={onClose}
               className={cn(
-                'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                'relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
                 active
-                  ? 'bg-primary/10 text-primary'
+                  ? 'text-foreground'
                   : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground'
               )}
+              style={active ? {
+                background: 'linear-gradient(90deg, rgba(var(--accent-lime-rgb), 0.08), transparent)',
+              } : undefined}
             >
+              {/* Active indicator bar */}
+              {active && (
+                <span
+                  className="absolute left-0 top-1.5 bottom-1.5 w-0.5 rounded-full"
+                  style={{ background: 'var(--accent-lime)' }}
+                />
+              )}
               <Icon
                 className={cn(
                   'w-4 h-4 shrink-0',
-                  active ? 'text-primary' : 'text-muted-foreground'
+                  active ? 'text-foreground' : 'text-muted-foreground'
                 )}
               />
               {label}
@@ -95,7 +98,7 @@ export function Sidebar({ mobileOpen = false, onClose }: SidebarProps) {
       {/* Footer */}
       <div className="px-3 py-4 shrink-0 border-t border-border">
         <p className="px-3 text-[11px] text-muted-foreground">
-          v0.2.0 · Auth UI
+          v0.3.0 · Pipeline Kanban
         </p>
       </div>
     </div>
