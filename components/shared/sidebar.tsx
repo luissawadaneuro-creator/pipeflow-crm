@@ -36,8 +36,7 @@ export function Sidebar({ mobileOpen = false, onClose }: SidebarProps) {
         <Logo size="md" />
         <button
           onClick={onClose}
-          className="lg:hidden p-1 rounded text-muted-foreground hover:text-foreground transition-colors"
-          style={{ color: 'var(--pf-text-muted)' }}
+          className="lg:hidden p-1 rounded transition-colors nav-item-inactive"
           aria-label="Fechar menu"
         >
           <X className="w-5 h-5" />
@@ -55,13 +54,7 @@ export function Sidebar({ mobileOpen = false, onClose }: SidebarProps) {
 
       {/* Navigation */}
       <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-        <p
-          className="px-3 pb-2 text-[10px] uppercase tracking-[0.15em]"
-          style={{
-            fontFamily: 'var(--font-ibm-plex-mono), monospace',
-            color: 'var(--pf-text-muted)',
-          }}
-        >
+        <p className="px-3 pb-2 nav-label">
           Menu
         </p>
         {NAV_LINKS.map(({ href, label, icon: Icon }) => {
@@ -72,31 +65,12 @@ export function Sidebar({ mobileOpen = false, onClose }: SidebarProps) {
               href={href}
               onClick={onClose}
               className={cn(
-                'relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-150',
+                'relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150',
+                active ? 'nav-item-active' : 'nav-item-inactive',
               )}
-              style={
-                active
-                  ? {
-                      background: `rgba(var(--pf-accent-rgb, 202,255,51), 0.08)`,
-                      color: 'var(--pf-accent)',
-                    }
-                  : {
-                      color: 'var(--pf-text-secondary)',
-                    }
-              }
-              onMouseEnter={e => {
-                if (!active) (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.03)'
-              }}
-              onMouseLeave={e => {
-                if (!active) (e.currentTarget as HTMLElement).style.background = ''
-              }}
             >
-              {/* Active left bar */}
               {active && (
-                <span
-                  className="absolute left-0 top-1.5 bottom-1.5 w-0.5 rounded-full"
-                  style={{ background: 'var(--pf-accent)' }}
-                />
+                <span className="absolute left-0 top-1.5 bottom-1.5 w-0.5 rounded-full nav-accent-bar" />
               )}
               <Icon className="w-4 h-4 shrink-0" />
               {label}
@@ -106,19 +80,8 @@ export function Sidebar({ mobileOpen = false, onClose }: SidebarProps) {
       </nav>
 
       {/* Footer */}
-      <div
-        className="px-3 py-4 shrink-0"
-        style={{ borderTop: '1px solid var(--pf-border-subtle)' }}
-      >
-        <p
-          className="px-3 text-[10px] uppercase tracking-[0.1em]"
-          style={{
-            fontFamily: 'var(--font-ibm-plex-mono), monospace',
-            color: 'var(--pf-text-muted)',
-          }}
-        >
-          v0.3.0
-        </p>
+      <div className="px-3 py-4 shrink-0 sidebar-footer">
+        <p className="px-3 nav-label">v0.3.0</p>
       </div>
     </div>
   )
@@ -126,13 +89,7 @@ export function Sidebar({ mobileOpen = false, onClose }: SidebarProps) {
   return (
     <>
       {/* Desktop sidebar */}
-      <aside
-        className="hidden lg:flex flex-col fixed left-0 top-0 h-full w-60 z-40"
-        style={{
-          background: 'var(--pf-surface)',
-          borderRight: '1px solid var(--pf-border-subtle)',
-        }}
-      >
+      <aside className="hidden lg:flex flex-col fixed left-0 top-0 h-full w-60 z-40 sidebar-root">
         {content}
       </aside>
 
@@ -148,13 +105,9 @@ export function Sidebar({ mobileOpen = false, onClose }: SidebarProps) {
         />
         <aside
           className={cn(
-            'fixed left-0 top-0 h-full w-64 z-[52] flex flex-col transition-transform duration-300 ease-in-out lg:hidden',
+            'fixed left-0 top-0 h-full w-64 z-[52] flex flex-col transition-transform duration-300 ease-in-out lg:hidden sidebar-root',
             mobileOpen ? 'translate-x-0' : '-translate-x-full'
           )}
-          style={{
-            background: 'var(--pf-surface)',
-            borderRight: '1px solid var(--pf-border-subtle)',
-          }}
         >
           {content}
         </aside>

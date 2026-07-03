@@ -126,10 +126,7 @@ export function KanbanColumn({ stage, deals, onAddDeal, onEditDeal }: KanbanColu
             </span>
             <button
               onClick={() => onAddDeal(stage)}
-              className="w-6 h-6 rounded flex items-center justify-center transition-colors"
-              style={{ color: 'var(--pf-text-muted)' }}
-              onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = 'var(--pf-text)')}
-              onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = 'var(--pf-text-muted)')}
+              className="w-6 h-6 rounded flex items-center justify-center transition-colors kanban-add-btn"
               aria-label={`Adicionar negócio em ${cfg.label}`}
             >
               <Plus className="w-3.5 h-3.5" />
