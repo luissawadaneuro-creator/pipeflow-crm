@@ -72,39 +72,46 @@ export function KanbanBoard() {
 
   function handleDragEnd({ active, over }: DragEndEvent) {
     setActiveId(null)
-    if (!over) return
 
     const activeId = active.id as string
-    const overId = over.id as string
-    if (activeId === overId) return
 
     setDeals(prev => {
       const activeDeal = prev.find(d => d.id === activeId)
       if (!activeDeal) return prev
 
-      // Moving within the same column — reorder
-      const overDeal = prev.find(d => d.id === overId)
-      if (overDeal && overDeal.stage === activeDeal.stage) {
-        const stageDeals = prev
-          .filter(d => d.stage === activeDeal.stage)
-          .sort((a, b) => a.position - b.position)
-        const oldIdx = stageDeals.findIndex(d => d.id === activeId)
-        const newIdx = stageDeals.findIndex(d => d.id === overId)
-        const reordered = arrayMove(stageDeals, oldIdx, newIdx).map((d, i) => ({
-          ...d,
-          position: i,
-        }))
-        return prev.map(d => reordered.find(r => r.id === d.id) ?? d)
+      // If dropped on a card in the same column, reorder
+      if (over && over.id !== activeId) {
+        const overId = over.id as string
+        const overDeal = prev.find(d => d.id === overId)
+        if (overDeal && overDeal.stage === activeDeal.stage) {
+          const stageDeals = prev
+            .filter(d => d.stage === activeDeal.stage)
+            .sort((a, b) => a.position - b.position)
+          const oldIdx = stageDeals.findIndex(d => d.id === activeId)
+          const newIdx = stageDeals.findIndex(d => d.id === overId)
+          if (oldIdx !== -1 && newIdx !== -1) {
+            const reordered = arrayMove(stageDeals, oldIdx, newIdx).map((d, i) => ({
+              ...d,
+              position: i,
+            }))
+            return prev.map(d => reordered.find(r => r.id === d.id) ?? d)
+          }
+        }
       }
 
-      // Cross-column: just normalise positions
-      return prev.map((d, _, arr) => {
-        const stageDeals = arr
-          .filter(x => x.stage === d.stage)
-          .sort((a, b) => a.position - b.position)
-        const idx = stageDeals.findIndex(x => x.id === d.id)
-        return { ...d, position: idx }
+      // Always normalise positions for all stages (handles cross-column drops too)
+      const stageMap = new Map<DealStage, Deal[]>()
+      for (const d of prev) {
+        const list = stageMap.get(d.stage) ?? []
+        list.push(d)
+        stageMap.set(d.stage, list)
+      }
+      const normalised: Deal[] = []
+      stageMap.forEach((list) => {
+        list.sort((a, b) => a.position - b.position)
+        list.forEach((d, i) => normalised.push({ ...d, position: i }))
       })
+      return normalised
     })
   }
 

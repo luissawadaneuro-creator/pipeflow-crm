@@ -43,7 +43,14 @@ interface DealCardProps {
 }
 
 export function DealCard({ deal, onEdit, overlay = false }: DealCardProps) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
     id: deal.id,
     data: { deal },
   })
@@ -59,25 +66,28 @@ export function DealCard({ deal, onEdit, overlay = false }: DealCardProps) {
     <div
       ref={setNodeRef}
       style={style}
+      // Listeners on the whole card so any area can initiate drag
+      {...attributes}
+      {...listeners}
       className={cn(
-        'group relative rounded-xl border bg-card transition-all duration-150 cursor-pointer select-none',
+        'group relative rounded-xl border bg-card transition-all duration-150 select-none',
         'border-border hover:border-slate-700',
         'shadow-sm hover:shadow-md hover:shadow-black/20',
+        // cursor: grab while not dragging, grabbing while dragging
+        !overlay && 'cursor-grab active:cursor-grabbing',
         isDragging && !overlay && 'opacity-40 border-dashed',
-        overlay && 'shadow-2xl shadow-black/40 rotate-[1.5deg] scale-[1.02] border-slate-600 opacity-95',
+        overlay && 'shadow-2xl shadow-black/40 rotate-[1.5deg] scale-[1.02] border-slate-600 opacity-95 cursor-grabbing',
       )}
-      onClick={() => !isDragging && onEdit(deal)}
+      // Only open form on a genuine click (no movement = not a drag)
+      onClick={() => {
+        if (!isDragging) onEdit(deal)
+      }}
     >
       {/* Left accent stripe on hover */}
-      <div className="absolute left-0 top-3 bottom-3 w-0.5 rounded-full bg-primary opacity-0 group-hover:opacity-100 transition-opacity" />
+      <div className="absolute left-0 top-3 bottom-3 w-0.5 rounded-full bg-primary opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
 
-      {/* Drag handle */}
-      <div
-        {...attributes}
-        {...listeners}
-        className="absolute right-2 top-2 opacity-0 group-hover:opacity-60 transition-opacity cursor-grab active:cursor-grabbing p-0.5 rounded"
-        onClick={e => e.stopPropagation()}
-      >
+      {/* Drag handle indicator — purely decorative, visible on hover */}
+      <div className="absolute right-2 top-2 opacity-0 group-hover:opacity-40 transition-opacity pointer-events-none">
         <GripVertical className="w-3.5 h-3.5 text-muted-foreground" />
       </div>
 
@@ -126,7 +136,7 @@ export function DealCard({ deal, onEdit, overlay = false }: DealCardProps) {
             const { label, urgent, overdue } = formatDeadline(deal.deadline)
             return (
               <div className={cn(
-                'flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium',
+                'flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium pointer-events-none',
                 overdue && 'bg-red-500/15 text-red-400',
                 urgent && !overdue && 'bg-amber-500/15 text-amber-400',
                 !urgent && !overdue && 'bg-slate-700/60 text-muted-foreground',
