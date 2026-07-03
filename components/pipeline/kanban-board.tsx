@@ -177,7 +177,7 @@ export function KanbanBoard() {
   }
 
   return (
-    <>
+    <div className="flex flex-col flex-1 min-h-0 h-full">
       <DndContext
         sensors={sensors}
         collisionDetection={closestCorners}
@@ -186,7 +186,7 @@ export function KanbanBoard() {
         onDragEnd={handleDragEnd}
       >
         {/* Horizontal scroll container */}
-        <div className="flex gap-4 pb-6 overflow-x-auto min-h-0 flex-1 px-1">
+        <div className="flex gap-4 pb-3 overflow-x-auto min-h-0 flex-1 px-1 kanban-scroll">
           {STAGES.map(stage => (
             <KanbanColumn
               key={stage}
@@ -215,6 +215,6 @@ export function KanbanBoard() {
         deal={editingDeal}
         defaultStage={defaultStage}
       />
-    </>
+    </div>
   )
 }

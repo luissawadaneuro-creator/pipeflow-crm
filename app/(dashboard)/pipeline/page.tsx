@@ -16,7 +16,7 @@ export default function PipelinePage() {
       </div>
 
       {/* Board — takes remaining vertical space */}
-      <div className="flex-1 min-h-0 overflow-hidden">
+      <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
         <KanbanBoard />
       </div>
     </div>

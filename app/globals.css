@@ -156,6 +156,25 @@ body::before {
   --sidebar-ring: #CAFF33;
 }
 
+/* ── Kanban horizontal scrollbar ─────────────────── */
+.kanban-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--pf-border) transparent;
+}
+.kanban-scroll::-webkit-scrollbar {
+  height: 6px;
+}
+.kanban-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.kanban-scroll::-webkit-scrollbar-thumb {
+  background: var(--pf-border);
+  border-radius: 3px;
+}
+.kanban-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--pf-text-muted);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
