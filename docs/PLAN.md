@@ -434,30 +434,30 @@ feat: stripe — subscription plans, checkout, webhook handler, customer portal,
 ### Entregas
 
 #### UI — Seções da Landing Page
-- [ ] `app/(marketing)/page.tsx` — root public page
-- [ ] `app/(marketing)/layout.tsx` — layout sem sidebar, com nav pública
-- [ ] `components/marketing/nav.tsx` — barra de navegação com logo, links e botão "Entrar" / "Começar grátis"
-- [ ] `components/marketing/hero.tsx` — headline, subheadline, CTA primário ("Começar grátis"), screenshot/mockup do app
-- [ ] `components/marketing/features.tsx` — grid de 6 funcionalidades com ícone, título e descrição
-- [ ] `components/marketing/pricing.tsx` — cards Free vs Pro com lista de features e botões de ação
-- [ ] `components/marketing/cta.tsx` — seção final de conversão com headline + botão
-- [ ] `components/marketing/footer.tsx` — links e copyright
+- [x] `app/(marketing)/page.tsx` — root public page
+- [x] `app/(marketing)/layout.tsx` — layout sem sidebar, com nav pública
+- [x] `components/marketing/nav.tsx` — barra de navegação com logo, links e botão "Entrar" / "Começar grátis"
+- [x] `components/marketing/hero.tsx` — headline, subheadline, CTA primário ("Começar grátis") — sem screenshot/mockup do app
+- [x] `components/marketing/features.tsx` — grid de 6 funcionalidades com ícone, título e descrição
+- [x] `components/marketing/pricing.tsx` — cards Free vs Pro com lista de features e botões de ação
+- [x] `components/marketing/cta.tsx` — seção final de conversão com headline + botão
+- [x] `components/marketing/footer.tsx` — links e copyright
 
 #### Qualidade Visual
-- [ ] Animações suaves com Tailwind `transition` e `animate-`
-- [ ] Gradiente sutil no hero (slate-950 → slate-900)
+- [x] Animações suaves com Tailwind `transition` e `animate-`
+- [x] Gradiente sutil no hero (paleta PipeFlow Brand v2, não slate-950 → slate-900)
 - [ ] Screenshot do pipeline Kanban como social proof
-- [ ] Responsivo: mobile-first, breakpoints sm/md/lg
+- [x] Responsivo: mobile-first, breakpoints sm/md/lg
 
 #### SEO Básico
-- [ ] `metadata` com title, description e og:image em `app/(marketing)/layout.tsx`
+- [x] `metadata` com title, description e og:image em `app/(marketing)/layout.tsx`
 - [ ] `sitemap.ts` com rota pública
 
 #### Verificação
-- [ ] Landing carrega em `/` sem autenticação
-- [ ] CTAs direcionam para `/signup`
-- [ ] Preços exibem valores corretos alinhados com Stripe
-- [ ] Layout responsivo funciona em mobile
+- [x] Landing carrega em `/` sem autenticação
+- [x] CTAs direcionam para `/signup`
+- [ ] Preços exibem valores corretos alinhados com Stripe (M9 ainda não implementado)
+- [x] Layout responsivo funciona em mobile
 
 ### Commit Final
 ```
