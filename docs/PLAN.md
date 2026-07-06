@@ -42,8 +42,8 @@ Cada milestone: branch própria → PR para `develop` → merge → próxima bra
 - [x] `.gitignore` incluindo `.env*.local`
 
 #### Supabase
-- [ ] Criar projeto no Supabase
-- [x] `lib/supabase/client.ts` — browser client
+- [x] Criar projeto no Supabase
+- [x] `lib/supabase/client.ts` — browser client (lazy singleton)
 - [x] `lib/supabase/server.ts` — server component client
 - [x] `lib/supabase/middleware.ts` — refresh de sessão
 - [x] `proxy.ts` na raiz — proteção de rotas `/dashboard/*` (Next.js 16 usa `proxy.ts`)
@@ -166,31 +166,31 @@ feat: workspaces — multi-tenant setup, workspace switcher, RLS policies
 - [ ] Índices em `workspace_id`, `status`, `assigned_to`
 
 #### UI — Lista de Leads (construir com mock data primeiro)
-- [ ] `app/(dashboard)/leads/page.tsx` — listagem em tabela
-- [ ] `components/leads/leads-table.tsx` — tabela com colunas: Nome, Empresa, E-mail, Status, Responsável, Data
-- [ ] `components/leads/leads-filters.tsx` — busca por texto + filtro por status + filtro por responsável
-- [ ] `components/leads/lead-status-badge.tsx` — badge colorido por status
-- [ ] `components/leads/lead-form.tsx` — form de criação/edição em Dialog
-- [ ] Skeleton loader para estado de loading
+- [x] `app/(dashboard)/leads/page.tsx` — listagem em tabela
+- [x] `components/leads/leads-table.tsx` — tabela com colunas: Nome, Empresa, E-mail, Status, Responsável, Data
+- [x] `components/leads/leads-filters.tsx` — busca por texto + filtro por status + filtro por responsável
+- [x] `components/leads/lead-status-badge.tsx` — badge colorido por status
+- [x] `components/leads/lead-form.tsx` — form de criação/edição em Dialog
+- [x] Skeleton loader para estado de loading
 
 #### UI — Detalhe do Lead
-- [ ] `app/(dashboard)/leads/[id]/page.tsx` — página de detalhe
-- [ ] `components/leads/lead-profile.tsx` — card com dados completos do lead
-- [ ] Seção de atividades (placeholder para M6)
-- [ ] Seção de negócios vinculados (placeholder para M5)
-- [ ] Breadcrumb: Leads > [Nome do Lead]
+- [x] `app/(dashboard)/leads/[id]/page.tsx` — página de detalhe
+- [x] `components/leads/lead-profile.tsx` — card com dados completos do lead
+- [x] Seção de atividades (placeholder para M6)
+- [x] Seção de negócios vinculados (placeholder para M5)
+- [ ] Breadcrumb: Leads > [Nome do Lead] — existe apenas botão "voltar", sem breadcrumb completo
 
 #### Lógica
-- [ ] Server Action `createLead`
-- [ ] Server Action `updateLead`
-- [ ] Server Action `deleteLead`
-- [ ] Busca e filtros via query params na URL (sem estado client)
+- [ ] Server Action `createLead` — implementado como estado local (mock), sem persistência real
+- [ ] Server Action `updateLead` — implementado como estado local (mock), sem persistência real
+- [ ] Server Action `deleteLead` — implementado como estado local (mock), sem persistência real
+- [ ] Busca e filtros via query params na URL (sem estado client) — atualmente via estado client, não URL
 
 #### Verificação
-- [ ] Criar, editar e deletar lead funciona
-- [ ] Busca por nome filtra em tempo real (ou ao submeter)
-- [ ] Filtro por status funciona
-- [ ] Página de detalhe carrega dados corretos
+- [x] Criar, editar e deletar lead funciona (em memória, sem persistência)
+- [x] Busca por nome filtra em tempo real (ou ao submeter)
+- [x] Filtro por status funciona
+- [x] Página de detalhe carrega dados corretos (mock)
 
 ### Commit Final
 ```
@@ -213,34 +213,34 @@ feat: leads — CRUD, list with search/filters, lead detail page
 - [ ] Índice em `workspace_id`, `stage`, `position`
 
 #### Instalação
-- [ ] `npm install @dnd-kit/core @dnd-kit/sortable @dnd-kit/utilities`
+- [x] `npm install @dnd-kit/core @dnd-kit/sortable @dnd-kit/utilities`
 
 #### UI — Board (construir com mock data primeiro)
-- [ ] `app/(dashboard)/pipeline/page.tsx` — página do board
-- [ ] `components/pipeline/kanban-board.tsx` — container com DndContext
-- [ ] `components/pipeline/kanban-column.tsx` — coluna com SortableContext, label e contador
-- [ ] `components/pipeline/deal-card.tsx` — card com título, valor, lead, responsável, prazo
-- [ ] `components/pipeline/deal-form.tsx` — form de criação/edição de negócio em Dialog
-- [ ] Indicador visual de valor total por coluna
-- [ ] Cores diferenciadas: coluna "Fechado Ganho" (emerald), "Fechado Perdido" (red)
+- [x] `app/(dashboard)/pipeline/page.tsx` — página do board
+- [x] `components/pipeline/kanban-board.tsx` — container com DndContext
+- [x] `components/pipeline/kanban-column.tsx` — coluna com SortableContext, label e contador
+- [x] `components/pipeline/deal-card.tsx` — card com título, valor, lead, responsável, prazo
+- [x] `components/pipeline/deal-form.tsx` — form de criação/edição de negócio em Dialog
+- [x] Indicador visual de valor total por coluna
+- [x] Cores diferenciadas: coluna "Fechado Ganho" (emerald), "Fechado Perdido" (red)
 
 #### Drag-and-Drop
-- [ ] `useDraggable` / `useDroppable` via @dnd-kit nos cards e colunas
-- [ ] `onDragEnd` calcula novo `stage` e nova `position`
-- [ ] Atualização otimista do estado local antes da confirmação do server
-- [ ] Server Action `updateDealStage(dealId, stage, position)`
+- [x] `useDraggable` / `useDroppable` via @dnd-kit nos cards e colunas
+- [x] `onDragEnd` calcula novo `stage` e nova `position`
+- [x] Atualização otimista do estado local antes da confirmação do server
+- [ ] Server Action `updateDealStage(dealId, stage, position)` — persistência real ainda não implementada
 
 #### Lógica
-- [ ] Server Action `createDeal`
-- [ ] Server Action `updateDeal`
-- [ ] Server Action `deleteDeal`
-- [ ] Reordenação de posição dentro da mesma coluna
+- [ ] Server Action `createDeal` — implementado como estado local (mock), sem persistência real
+- [ ] Server Action `updateDeal` — implementado como estado local (mock), sem persistência real
+- [ ] Server Action `deleteDeal` — não implementado
+- [x] Reordenação de posição dentro da mesma coluna
 
 #### Verificação
-- [ ] Cards aparecem na coluna correta
-- [ ] Drag-and-drop move card e persiste no banco
-- [ ] Criar novo negócio via botão na coluna
-- [ ] Valor total por coluna calcula corretamente
+- [x] Cards aparecem na coluna correta
+- [ ] Drag-and-drop move card e persiste no banco (move e reordena em memória, sem banco)
+- [x] Criar novo negócio via botão na coluna
+- [x] Valor total por coluna calcula corretamente
 
 ### Commit Final
 ```
@@ -295,34 +295,34 @@ feat: activities — timeline per lead, 4 activity types, chronological history
 ### Entregas
 
 #### Instalação
-- [ ] `npm install recharts`
+- [x] `npm install recharts`
 
 #### UI — Cards de Métricas (construir com dados estáticos primeiro)
-- [ ] `app/(dashboard)/dashboard/page.tsx` — página principal
-- [ ] `components/dashboard/metric-card.tsx` — card reutilizável (título, valor, ícone, variação %)
-- [ ] Cards: Total de Leads, Negócios Abertos, Valor Total do Pipeline, Taxa de Conversão
+- [x] `app/(dashboard)/dashboard/page.tsx` — página principal
+- [x] `components/dashboard/metric-card.tsx` — card reutilizável (título, valor, ícone, variação %)
+- [x] Cards: Total de Leads, Negócios Abertos, Valor Total do Pipeline, Taxa de Conversão
 - [ ] Skeleton loader enquanto carrega
 
 #### UI — Gráfico de Funil
-- [ ] `components/dashboard/funnel-chart.tsx` — gráfico de barras horizontais com Recharts mostrando quantidade por etapa
-- [ ] Cores por etapa consistentes com o Kanban
+- [x] `components/dashboard/funnel-chart.tsx` — gráfico de barras horizontais com Recharts mostrando quantidade por etapa
+- [x] Cores por etapa consistentes com o Kanban
 
 #### UI — Negócios com Prazo Próximo
-- [ ] `components/dashboard/upcoming-deals.tsx` — lista de até 5 negócios com prazo nos próximos 7 dias
-- [ ] Indicador visual se prazo está vencido (vermelho) ou próximo (amarelo)
+- [x] `components/dashboard/upcoming-deals.tsx` — lista de até 5 negócios com prazo nos próximos 7 dias
+- [x] Indicador visual se prazo está vencido (vermelho) ou próximo (amarelo)
 
 #### Lógica (queries no banco)
-- [ ] `getTotalLeads(workspaceId)` — count de leads ativos
-- [ ] `getOpenDeals(workspaceId)` — count de deals não fechados
-- [ ] `getPipelineValue(workspaceId)` — soma de `value` dos deals abertos
-- [ ] `getConversionRate(workspaceId)` — `won / (won + lost) * 100`
-- [ ] `getDealsByStage(workspaceId)` — count por stage para o funil
-- [ ] `getUpcomingDeals(workspaceId, userId)` — deals com deadline ≤ 7 dias
+- [ ] `getTotalLeads(workspaceId)` — count de leads ativos — calculado a partir de mock, sem query real
+- [ ] `getOpenDeals(workspaceId)` — count de deals não fechados — calculado a partir de mock, sem query real
+- [ ] `getPipelineValue(workspaceId)` — soma de `value` dos deals abertos — calculado a partir de mock, sem query real
+- [ ] `getConversionRate(workspaceId)` — `won / (won + lost) * 100` — calculado a partir de mock, sem query real
+- [ ] `getDealsByStage(workspaceId)` — count por stage para o funil — calculado a partir de mock, sem query real
+- [ ] `getUpcomingDeals(workspaceId, userId)` — deals com deadline ≤ 7 dias — calculado a partir de mock, sem query real
 
 #### Verificação
-- [ ] Todos os cards exibem valores reais do workspace
-- [ ] Gráfico de funil reflete distribuição real dos deals
-- [ ] Lista de prazos mostra apenas deals do workspace ativo
+- [ ] Todos os cards exibem valores reais do workspace (exibem valores mock)
+- [x] Gráfico de funil reflete distribuição real dos deals (mock)
+- [ ] Lista de prazos mostra apenas deals do workspace ativo (sem conceito de workspace ainda)
 
 ### Commit Final
 ```
@@ -343,7 +343,7 @@ feat: dashboard — metrics cards, sales funnel chart, upcoming deadlines
 - [ ] RLS — apenas admin do workspace vê e cria convites
 
 #### Instalação
-- [ ] `npm install resend`
+- [x] `npm install resend`
 - [ ] Configurar `RESEND_API_KEY` no `.env.local`
 
 #### UI — Gestão de Membros
@@ -358,7 +358,7 @@ feat: dashboard — metrics cards, sales funnel chart, upcoming deadlines
 - [ ] Se logado: adicionar ao workspace e redirecionar
 
 #### Lógica
-- [ ] `lib/resend/emails.ts` — template do e-mail de convite com link `APP_URL/invite/[token]`
+- [ ] `lib/resend/emails.ts` — arquivo criado como stub (`buildInviteEmail` retorna string vazia), template ainda não implementado
 - [ ] Server Action `sendInvite(email, role)` — cria registro + envia e-mail via Resend
 - [ ] API Route `GET /api/invites/[token]` — valida token + adiciona membro + marca como aceito
 - [ ] Expiração de convite após 7 dias
@@ -384,7 +384,7 @@ feat: invites — email invitations via Resend, invite acceptance flow, member m
 ### Entregas
 
 #### Instalação
-- [ ] `npm install stripe @stripe/stripe-js`
+- [ ] `npm install stripe @stripe/stripe-js` — apenas `stripe` instalado, falta `@stripe/stripe-js`
 - [ ] Configurar variáveis Stripe no `.env.local`
 - [ ] Criar produto e preço no Stripe Dashboard (R$ 49/mês)
 
@@ -400,7 +400,7 @@ feat: invites — email invitations via Resend, invite acceptance flow, member m
 - [ ] Banner de limite atingido quando workspace Free chega ao limite
 
 #### Lógica
-- [ ] `lib/stripe/client.ts` — instância do Stripe
+- [x] `lib/stripe/client.ts` — instância do Stripe
 - [ ] Server Action `createCheckoutSession(workspaceId)` → redireciona para Stripe Checkout
 - [ ] Server Action `createPortalSession(workspaceId)` → redireciona para Customer Portal
 - [ ] `app/api/stripe/webhook/route.ts` — handler de webhooks:
