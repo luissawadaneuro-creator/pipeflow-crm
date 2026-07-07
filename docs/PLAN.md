@@ -120,11 +120,11 @@ feat: authentication — login, signup, password reset with Supabase Auth + rout
 ### Entregas
 
 #### Banco de Dados (Supabase)
-- [ ] Tabela `workspaces` — `id`, `name`, `slug`, `plan` (free/pro), `owner_id`, `created_at`
-- [ ] Tabela `workspace_members` — `workspace_id`, `user_id`, `role` (admin/member), `created_at`
-- [ ] RLS em `workspaces` — usuário vê apenas workspaces onde é membro
-- [ ] RLS em `workspace_members` — membro vê apenas registros do seu workspace
-- [ ] Função SQL `get_user_workspaces(user_id)` para busca eficiente
+- [x] Tabela `workspaces` — `id`, `name`, `slug`, `plan` (free/pro), `owner_id`, `created_at`
+- [x] Tabela `workspace_members` — `workspace_id`, `user_id`, `role` (admin/member), `created_at`
+- [x] RLS em `workspaces` — usuário vê apenas workspaces onde é membro
+- [x] RLS em `workspace_members` — membro vê apenas registros do seu workspace
+- [x] Função SQL `get_user_workspaces(user_id)` para busca eficiente
 
 #### UI — Onboarding
 - [ ] `app/(dashboard)/workspace/new/page.tsx` — form de criação de workspace (nome)
@@ -160,10 +160,10 @@ feat: workspaces — multi-tenant setup, workspace switcher, RLS policies
 ### Entregas
 
 #### Banco de Dados
-- [ ] Tabela `leads` — `id`, `workspace_id`, `name`, `email`, `phone`, `company`, `role`, `status`, `assigned_to`, `created_at`, `updated_at`
-- [ ] Status enum: `new`, `contacted`, `qualified`, `lost`
-- [ ] RLS — filtra por `workspace_id` via member check
-- [ ] Índices em `workspace_id`, `status`, `assigned_to`
+- [x] Tabela `leads` — `id`, `workspace_id`, `name`, `email`, `phone`, `company`, `role`, `status`, `assigned_to`, `created_at`, `updated_at`
+- [x] Status enum: `new`, `contacted`, `qualified`, `lost`
+- [x] RLS — filtra por `workspace_id` via member check
+- [x] Índices em `workspace_id`, `status`, `assigned_to`
 
 #### UI — Lista de Leads (construir com mock data primeiro)
 - [x] `app/(dashboard)/leads/page.tsx` — listagem em tabela
@@ -207,10 +207,10 @@ feat: leads — CRUD, list with search/filters, lead detail page
 ### Entregas
 
 #### Banco de Dados
-- [ ] Tabela `deals` — `id`, `workspace_id`, `title`, `value`, `stage`, `lead_id`, `assigned_to`, `deadline`, `position`, `created_at`, `updated_at`
-- [ ] Stage enum: `new_lead`, `contacted`, `proposal_sent`, `negotiation`, `won`, `lost`
-- [ ] RLS — filtra por `workspace_id`
-- [ ] Índice em `workspace_id`, `stage`, `position`
+- [x] Tabela `deals` — `id`, `workspace_id`, `title`, `value`, `stage`, `lead_id`, `assigned_to`, `deadline`, `position`, `created_at`, `updated_at`
+- [x] Stage enum: `new_lead`, `contacted`, `proposal_sent`, `negotiation`, `won`, `lost`
+- [x] RLS — filtra por `workspace_id`
+- [x] Índice em `workspace_id`, `stage`, `position`
 
 #### Instalação
 - [x] `npm install @dnd-kit/core @dnd-kit/sortable @dnd-kit/utilities`
@@ -257,10 +257,10 @@ feat: pipeline — Kanban board with drag-and-drop, deals CRUD, stage persistenc
 ### Entregas
 
 #### Banco de Dados
-- [ ] Tabela `activities` — `id`, `workspace_id`, `lead_id`, `author_id`, `type`, `description`, `activity_date`, `created_at`
-- [ ] Type enum: `call`, `email`, `meeting`, `note`
-- [ ] RLS — filtra por `workspace_id`
-- [ ] Índice em `lead_id`, `activity_date DESC`
+- [x] Tabela `activities` — `id`, `workspace_id`, `lead_id`, `author_id`, `type`, `description`, `activity_date`, `created_at`
+- [x] Type enum: `call`, `email`, `meeting`, `note`
+- [x] RLS — filtra por `workspace_id`
+- [x] Índice em `lead_id`, `activity_date DESC`
 
 #### UI — Timeline (na página de detalhe do lead)
 - [ ] `components/leads/activity-timeline.tsx` — lista cronológica de atividades
@@ -339,8 +339,8 @@ feat: dashboard — metrics cards, sales funnel chart, upcoming deadlines
 ### Entregas
 
 #### Banco de Dados
-- [ ] Tabela `workspace_invites` — `id`, `workspace_id`, `email`, `role`, `token`, `invited_by`, `accepted_at`, `expires_at`, `created_at`
-- [ ] RLS — apenas admin do workspace vê e cria convites
+- [x] Tabela `workspace_invites` — `id`, `workspace_id`, `email`, `role`, `token`, `invited_by`, `accepted_at`, `expires_at`, `created_at`
+- [x] RLS — apenas admin do workspace vê e cria convites
 
 #### Instalação
 - [x] `npm install resend`
@@ -389,7 +389,7 @@ feat: invites — email invitations via Resend, invite acceptance flow, member m
 - [ ] Criar produto e preço no Stripe Dashboard (R$ 49/mês)
 
 #### Banco de Dados
-- [ ] Adicionar colunas em `workspaces`: `stripe_customer_id`, `stripe_subscription_id`, `plan_status` (active/canceled/trialing)
+- [x] Adicionar colunas em `workspaces`: `stripe_customer_id`, `stripe_subscription_id`, `plan_status` (active/canceled/trialing)
 - [ ] Atualizar RLS/checks de limite: max 2 membros e 50 leads no plano Free
 
 #### UI — Planos e Upgrade
