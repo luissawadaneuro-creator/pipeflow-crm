@@ -1,18 +1,18 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { Loader2, Building2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { createWorkspace } from '@/app/(dashboard)/workspace/actions'
 
 const SUGGESTIONS = ['Acme Vendas', 'Minha Empresa', 'StartupX', 'Freelancer Pessoal']
 
 export default function OnboardingPage() {
-  const router = useRouter()
   const [name, setName] = useState('')
   const [nameError, setNameError] = useState('')
+  const [formError, setFormError] = useState('')
   const [loading, setLoading] = useState(false)
 
   function validate(): boolean {
@@ -24,13 +24,16 @@ export default function OnboardingPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    setFormError('')
     if (!validate()) return
 
     setLoading(true)
-    await new Promise((r) => setTimeout(r, 900))
+    const result = await createWorkspace(name.trim())
     setLoading(false)
 
-    router.push('/dashboard')
+    if (result?.error) {
+      setFormError(result.error)
+    }
   }
 
   return (
@@ -74,6 +77,12 @@ export default function OnboardingPage() {
           Um workspace é o espaço da sua equipe ou empresa dentro do PipeFlow.
           Você pode criar mais depois ou convidar colaboradores.
         </p>
+
+        {formError && (
+          <div className="mb-4 rounded-lg bg-destructive/10 border border-destructive/20 px-3 py-2.5 text-sm text-destructive">
+            {formError}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} noValidate className="space-y-5">
           <div className="space-y-1.5">

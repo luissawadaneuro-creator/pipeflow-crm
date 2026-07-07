@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils'
 import { WorkspaceSwitcher } from '@/components/shared/workspace-switcher'
 import { Logo } from '@/components/shared/logo'
 import { Separator } from '@/components/ui/separator'
+import type { Workspace } from '@/types'
 
 const NAV_LINKS = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -24,9 +25,11 @@ const NAV_LINKS = [
 interface SidebarProps {
   mobileOpen?: boolean
   onClose?: () => void
+  workspaces: Pick<Workspace, 'id' | 'name' | 'slug' | 'plan'>[]
+  activeWorkspaceId: string
 }
 
-export function Sidebar({ mobileOpen = false, onClose }: SidebarProps) {
+export function Sidebar({ mobileOpen = false, onClose, workspaces, activeWorkspaceId }: SidebarProps) {
   const pathname = usePathname()
 
   const content = (
@@ -47,7 +50,7 @@ export function Sidebar({ mobileOpen = false, onClose }: SidebarProps) {
 
       {/* Workspace switcher */}
       <div className="px-3 py-3 shrink-0">
-        <WorkspaceSwitcher />
+        <WorkspaceSwitcher workspaces={workspaces} activeWorkspaceId={activeWorkspaceId} />
       </div>
 
       <Separator style={{ background: 'var(--pf-border-subtle)' }} className="shrink-0" />

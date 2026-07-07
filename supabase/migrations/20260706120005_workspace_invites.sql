@@ -28,23 +28,23 @@ alter table public.workspace_invites enable row level security;
 create policy "workspace_invites_select_admins"
   on public.workspace_invites for select
   to authenticated
-  using (public.is_workspace_admin(workspace_id, auth.uid()));
+  using (public.is_workspace_admin(workspace_id, (select auth.uid())));
 
 create policy "workspace_invites_insert_admins"
   on public.workspace_invites for insert
   to authenticated
   with check (
-    public.is_workspace_admin(workspace_id, auth.uid())
-    and invited_by = auth.uid()
+    public.is_workspace_admin(workspace_id, (select auth.uid()))
+    and invited_by = (select auth.uid())
   );
 
 create policy "workspace_invites_update_admins"
   on public.workspace_invites for update
   to authenticated
-  using (public.is_workspace_admin(workspace_id, auth.uid()))
-  with check (public.is_workspace_admin(workspace_id, auth.uid()));
+  using (public.is_workspace_admin(workspace_id, (select auth.uid())))
+  with check (public.is_workspace_admin(workspace_id, (select auth.uid())));
 
 create policy "workspace_invites_delete_admins"
   on public.workspace_invites for delete
   to authenticated
-  using (public.is_workspace_admin(workspace_id, auth.uid()));
+  using (public.is_workspace_admin(workspace_id, (select auth.uid())));

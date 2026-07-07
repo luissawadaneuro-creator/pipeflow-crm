@@ -6,6 +6,7 @@ import { Loader2, ArrowLeft, CheckCircle2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { resetPassword } from './actions'
 
 export default function ResetPasswordPage() {
   const [email, setEmail] = useState('')
@@ -24,7 +25,7 @@ export default function ResetPasswordPage() {
     if (!validate()) return
 
     setLoading(true)
-    await new Promise((r) => setTimeout(r, 1000))
+    await resetPassword(email)
     setLoading(false)
     setSent(true)
   }

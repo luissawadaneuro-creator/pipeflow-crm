@@ -37,20 +37,20 @@ alter table public.deals enable row level security;
 create policy "deals_select_workspace_members"
   on public.deals for select
   to authenticated
-  using (public.is_workspace_member(workspace_id, auth.uid()));
+  using (public.is_workspace_member(workspace_id, (select auth.uid())));
 
 create policy "deals_insert_workspace_members"
   on public.deals for insert
   to authenticated
-  with check (public.is_workspace_member(workspace_id, auth.uid()));
+  with check (public.is_workspace_member(workspace_id, (select auth.uid())));
 
 create policy "deals_update_workspace_members"
   on public.deals for update
   to authenticated
-  using (public.is_workspace_member(workspace_id, auth.uid()))
-  with check (public.is_workspace_member(workspace_id, auth.uid()));
+  using (public.is_workspace_member(workspace_id, (select auth.uid())))
+  with check (public.is_workspace_member(workspace_id, (select auth.uid())));
 
 create policy "deals_delete_workspace_admins"
   on public.deals for delete
   to authenticated
-  using (public.is_workspace_admin(workspace_id, auth.uid()));
+  using (public.is_workspace_admin(workspace_id, (select auth.uid())));

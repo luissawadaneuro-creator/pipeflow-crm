@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
-import { Check, ChevronsUpDown, Plus, Zap } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { useTransition } from 'react'
+import Link from 'next/link'
+import { Check, ChevronsUpDown, Plus, Loader2 } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,21 +14,29 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Badge } from '@/components/ui/badge'
 import type { Workspace } from '@/types'
+import { switchWorkspace } from '@/app/(dashboard)/workspace/actions'
 
-const FAKE_WORKSPACES: Pick<Workspace, 'id' | 'name' | 'plan'>[] = [
-  { id: 'ws-1', name: 'Acme Vendas', plan: 'pro' },
-  { id: 'ws-2', name: 'Freelancer Pessoal', plan: 'free' },
-  { id: 'ws-3', name: 'StartupX', plan: 'free' },
-]
+interface WorkspaceSwitcherProps {
+  workspaces: Pick<Workspace, 'id' | 'name' | 'slug' | 'plan'>[]
+  activeWorkspaceId: string
+}
 
-export function WorkspaceSwitcher() {
-  const [activeId, setActiveId] = useState('ws-1')
-  const active = FAKE_WORKSPACES.find((w) => w.id === activeId) ?? FAKE_WORKSPACES[0]
+export function WorkspaceSwitcher({ workspaces, activeWorkspaceId }: WorkspaceSwitcherProps) {
+  const [isPending, startTransition] = useTransition()
+  const active = workspaces.find((w) => w.id === activeWorkspaceId) ?? workspaces[0]
+
+  function handleSelect(workspaceId: string) {
+    if (workspaceId === activeWorkspaceId) return
+    startTransition(() => {
+      switchWorkspace(workspaceId)
+    })
+  }
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        className="w-full flex items-center justify-between px-3 h-10 rounded-md font-medium text-sm text-foreground hover:bg-secondary/60 gap-2 transition-colors focus:outline-none"
+        className="w-full flex items-center justify-between px-3 h-10 rounded-md font-medium text-sm text-foreground hover:bg-secondary/60 gap-2 transition-colors focus:outline-none disabled:opacity-60"
+        disabled={isPending}
       >
         <div className="flex items-center gap-2 min-w-0">
           <span className="flex items-center justify-center w-6 h-6 rounded-md bg-primary/20 text-primary text-xs font-bold shrink-0">
@@ -36,7 +44,11 @@ export function WorkspaceSwitcher() {
           </span>
           <span className="truncate">{active.name}</span>
         </div>
-        <ChevronsUpDown className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+        {isPending ? (
+          <Loader2 className="w-3.5 h-3.5 text-muted-foreground shrink-0 animate-spin" />
+        ) : (
+          <ChevronsUpDown className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+        )}
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
@@ -49,10 +61,10 @@ export function WorkspaceSwitcher() {
             Workspaces
           </DropdownMenuLabel>
 
-          {FAKE_WORKSPACES.map((ws) => (
+          {workspaces.map((ws) => (
             <DropdownMenuItem
               key={ws.id}
-              onClick={() => setActiveId(ws.id)}
+              onClick={() => handleSelect(ws.id)}
               className="flex items-center justify-between px-2 py-2 cursor-pointer"
             >
               <div className="flex items-center gap-2 min-w-0">
@@ -67,7 +79,7 @@ export function WorkspaceSwitcher() {
                     PRO
                   </Badge>
                 )}
-                {ws.id === activeId && (
+                {ws.id === activeWorkspaceId && (
                   <Check className="w-3.5 h-3.5 text-primary" />
                 )}
               </div>
@@ -78,10 +90,12 @@ export function WorkspaceSwitcher() {
         <DropdownMenuSeparator className="bg-border" />
 
         <DropdownMenuGroup>
-          <DropdownMenuItem className="flex items-center gap-2 px-2 py-2 cursor-pointer text-muted-foreground hover:text-foreground">
-            <Plus className="w-4 h-4" />
-            <span className="text-sm">Criar workspace</span>
-          </DropdownMenuItem>
+          <Link href="/onboarding">
+            <DropdownMenuItem className="flex items-center gap-2 px-2 py-2 cursor-pointer text-muted-foreground hover:text-foreground">
+              <Plus className="w-4 h-4" />
+              <span className="text-sm">Criar workspace</span>
+            </DropdownMenuItem>
+          </Link>
         </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>

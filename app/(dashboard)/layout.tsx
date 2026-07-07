@@ -1,27 +1,46 @@
-'use client'
+import { cookies } from 'next/headers'
+import { redirect } from 'next/navigation'
+import { createClient } from '@/lib/supabase/server'
+import { getUserWorkspaces } from '@/lib/supabase/queries'
+import { DashboardShell } from '@/components/shared/dashboard-shell'
 
-import { Sidebar } from '@/components/shared/sidebar'
-import { Header } from '@/components/shared/header'
-import { useSidebar } from '@/hooks/useSidebar'
-
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const { open, toggle, close } = useSidebar()
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    redirect('/login')
+  }
+
+  const workspaces = await getUserWorkspaces(supabase, user.id)
+
+  if (workspaces.length === 0) {
+    redirect('/onboarding')
+  }
+
+  const cookieStore = await cookies()
+  const cookieWorkspaceId = cookieStore.get('active_workspace_id')?.value
+  const activeWorkspaceId = workspaces.some((w) => w.id === cookieWorkspaceId)
+    ? cookieWorkspaceId!
+    : workspaces[0].id
 
   return (
-    <div className="flex h-screen bg-background overflow-hidden">
-      <Sidebar mobileOpen={open} onClose={close} />
-
-      {/* Desktop offset — matches sidebar width */}
-      <div className="flex flex-col flex-1 lg:ml-60 min-w-0">
-        <Header onMenuClick={toggle} />
-        <main className="flex-1 overflow-auto p-4 lg:p-6">
-          <div className="animate-fade-slide-up h-full">{children}</div>
-        </main>
-      </div>
-    </div>
+    <DashboardShell
+      workspaces={workspaces}
+      activeWorkspaceId={activeWorkspaceId}
+      user={{
+        name: (user.user_metadata?.full_name as string | undefined) ?? user.email ?? 'Usuário',
+        email: user.email ?? '',
+      }}
+    >
+      {children}
+    </DashboardShell>
   )
 }
