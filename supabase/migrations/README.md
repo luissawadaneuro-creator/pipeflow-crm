@@ -7,6 +7,7 @@ Aplicar em ordem no SQL Editor do Supabase Studio (ou via `supabase db push` se 
 3. `20260706120003_deals.sql` — `deals`, RLS
 4. `20260706120004_activities.sql` — `activities`, RLS
 5. `20260706120005_workspace_invites.sql` — `workspace_invites`, RLS
+6. `20260707090000_rls_performance.sql` — recria todas as policies com `(select auth.uid())` em vez de `auth.uid()` direto, evitando reavaliação por linha (ver `supabase-postgres-best-practices` §3.3). **Necessário mesmo se as migrations 1-5 já foram aplicadas antes desta correção.**
 
 Após aplicar, regenerar os tipos:
 

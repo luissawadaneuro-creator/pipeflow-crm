@@ -25,32 +25,32 @@ alter table public.activities enable row level security;
 create policy "activities_select_workspace_members"
   on public.activities for select
   to authenticated
-  using (public.is_workspace_member(workspace_id, auth.uid()));
+  using (public.is_workspace_member(workspace_id, (select auth.uid())));
 
 create policy "activities_insert_workspace_members"
   on public.activities for insert
   to authenticated
   with check (
-    public.is_workspace_member(workspace_id, auth.uid())
-    and author_id = auth.uid()
+    public.is_workspace_member(workspace_id, (select auth.uid()))
+    and author_id = (select auth.uid())
   );
 
 create policy "activities_update_author_or_admin"
   on public.activities for update
   to authenticated
   using (
-    author_id = auth.uid()
-    or public.is_workspace_admin(workspace_id, auth.uid())
+    author_id = (select auth.uid())
+    or public.is_workspace_admin(workspace_id, (select auth.uid()))
   )
   with check (
-    author_id = auth.uid()
-    or public.is_workspace_admin(workspace_id, auth.uid())
+    author_id = (select auth.uid())
+    or public.is_workspace_admin(workspace_id, (select auth.uid()))
   );
 
 create policy "activities_delete_author_or_admin"
   on public.activities for delete
   to authenticated
   using (
-    author_id = auth.uid()
-    or public.is_workspace_admin(workspace_id, auth.uid())
+    author_id = (select auth.uid())
+    or public.is_workspace_admin(workspace_id, (select auth.uid()))
   );

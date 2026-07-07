@@ -7,6 +7,7 @@ import { Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { loginWithPassword } from './actions'
 
 interface FieldErrors {
   email?: string
@@ -39,11 +40,16 @@ export default function LoginPage() {
     if (Object.keys(fieldErrors).length > 0) return
 
     setLoading(true)
-    // Fake delay — auth real vem no M2 backend
-    await new Promise((r) => setTimeout(r, 1000))
+    const result = await loginWithPassword(email, password)
     setLoading(false)
 
+    if (result.error) {
+      setGlobalError(result.error)
+      return
+    }
+
     router.push('/dashboard')
+    router.refresh()
   }
 
   return (

@@ -83,27 +83,27 @@ feat: project setup — Next.js 14, Tailwind, shadcn/ui, Supabase clients, base 
 - [x] `app/(auth)/login/page.tsx` — form de e-mail + senha, link para cadastro
 - [x] `app/(auth)/signup/page.tsx` — form de nome + e-mail + senha, link para login
 - [x] `app/(auth)/reset-password/page.tsx` — form de e-mail para recuperação
-- [ ] `app/(auth)/update-password/page.tsx` — form de nova senha (via magic link)
+- [x] `app/(auth)/update-password/page.tsx` — form de nova senha (via magic link)
 - [x] Layout `app/(auth)/layout.tsx` — página centralizada sem sidebar
 - [x] `app/(auth)/onboarding/page.tsx` — criação do primeiro workspace com indicador de progresso
 
 #### Lógica de Auth
-- [ ] Server Actions em `app/(auth)/login/actions.ts` — `signInWithPassword`
-- [ ] Server Actions em `app/(auth)/signup/actions.ts` — `signUp`
-- [ ] Server Actions em `app/(auth)/reset-password/actions.ts` — `resetPasswordForEmail`
-- [x] Redirecionamento pós-login para `/dashboard` (fake, aguarda Supabase)
+- [x] Server Actions em `app/(auth)/login/actions.ts` — `signInWithPassword`
+- [x] Server Actions em `app/(auth)/signup/actions.ts` — `signUp`
+- [x] Server Actions em `app/(auth)/reset-password/actions.ts` — `resetPasswordForEmail`
+- [x] Redirecionamento pós-login para `/dashboard`
 - [x] Redirecionamento pós-logout para `/login` (botão Sair no header)
-- [ ] Logout no header via `supabase.auth.signOut()`
+- [x] Logout no header via `supabase.auth.signOut()`
 
 #### Proteção de Rotas
-- [x] `middleware.ts` bloqueia `/dashboard/*` sem sessão → redireciona para `/login` (ativo quando Supabase configurado)
-- [x] Usuário logado em `/login` → redireciona para `/dashboard` (ativo quando Supabase configurado)
+- [x] `middleware.ts` bloqueia `/dashboard/*`, `/leads`, `/pipeline`, `/settings`, `/workspace`, `/onboarding` sem sessão → redireciona para `/login`
+- [x] Usuário logado em `/login` → redireciona para `/dashboard`
 
 #### Verificação
-- [ ] Cadastro cria usuário no Supabase Auth
+- [x] Cadastro cria usuário no Supabase Auth (testado via signUp real contra o projeto)
 - [x] Login redireciona para `/dashboard`
-- [ ] Acesso a `/dashboard` sem login redireciona para `/login` (aguarda Supabase)
-- [ ] Reset de senha envia e-mail via Supabase
+- [x] Acesso a `/dashboard` sem login redireciona para `/login`
+- [x] Reset de senha envia e-mail via Supabase (sujeito ao rate limit de e-mail do plano free — aceitável em ambiente de teste)
 
 ### Commit Final
 ```
@@ -120,30 +120,30 @@ feat: authentication — login, signup, password reset with Supabase Auth + rout
 ### Entregas
 
 #### Banco de Dados (Supabase)
-- [ ] Tabela `workspaces` — `id`, `name`, `slug`, `plan` (free/pro), `owner_id`, `created_at`
-- [ ] Tabela `workspace_members` — `workspace_id`, `user_id`, `role` (admin/member), `created_at`
-- [ ] RLS em `workspaces` — usuário vê apenas workspaces onde é membro
-- [ ] RLS em `workspace_members` — membro vê apenas registros do seu workspace
-- [ ] Função SQL `get_user_workspaces(user_id)` para busca eficiente
+- [x] Tabela `workspaces` — `id`, `name`, `slug`, `plan` (free/pro), `owner_id`, `created_at`
+- [x] Tabela `workspace_members` — `workspace_id`, `user_id`, `role` (admin/member), `created_at`
+- [x] RLS em `workspaces` — usuário vê apenas workspaces onde é membro
+- [x] RLS em `workspace_members` — membro vê apenas registros do seu workspace
+- [x] Função SQL `get_user_workspaces(user_id)` para busca eficiente
 
 #### UI — Onboarding
-- [ ] `app/(dashboard)/workspace/new/page.tsx` — form de criação de workspace (nome)
-- [ ] Redirecionamento pós-cadastro para `/workspace/new` se não houver workspace
+- [x] `app/(auth)/onboarding/page.tsx` — form de criação de workspace (nome); usado no lugar de `/workspace/new` como fluxo único de criação
+- [x] Redirecionamento pós-cadastro para `/onboarding` se não houver workspace (via `app/(dashboard)/layout.tsx`)
 
 #### UI — Workspace Switcher
-- [ ] `components/shared/workspace-switcher.tsx` — dropdown no topo da sidebar com lista de workspaces + botão "Criar novo"
-- [ ] Context/hook `useWorkspace` para manter o workspace ativo no client
-- [ ] Cookie `active_workspace_id` setado no server para persistir entre reloads
+- [x] `components/shared/workspace-switcher.tsx` — dropdown no topo da sidebar com lista de workspaces reais + botão "Criar novo"
+- [x] Workspace ativo resolvido no Server Component (`app/(dashboard)/layout.tsx`) via cookie, sem Context client — `useWorkspace` não foi necessário
+- [x] Cookie `active_workspace_id` setado no server para persistir entre reloads
 
 #### Lógica
-- [ ] Server Action `createWorkspace` — cria workspace + insere membro como admin
-- [ ] Server Action `switchWorkspace` — atualiza cookie e redireciona
-- [ ] Middleware lê `active_workspace_id` e injeta em headers para Server Components
+- [x] Server Action `createWorkspace` — cria workspace + insere membro como admin
+- [x] Server Action `switchWorkspace` — atualiza cookie e redireciona
+- [ ] Middleware lê `active_workspace_id` e injeta em headers para Server Components — não implementado; o layout do dashboard lê o cookie diretamente, suficiente para o uso atual
 
 #### Verificação
-- [ ] Novo usuário é redirecionado para criar workspace
-- [ ] Workspace criado aparece no switcher
-- [ ] Dados de um workspace não vazam para outro
+- [x] Novo usuário é redirecionado para criar workspace
+- [x] Workspace criado aparece no switcher
+- [x] Dados de um workspace não vazam para outro (testado: RLS impede select e auto-inserção cruzada entre usuários)
 
 ### Commit Final
 ```
@@ -160,10 +160,10 @@ feat: workspaces — multi-tenant setup, workspace switcher, RLS policies
 ### Entregas
 
 #### Banco de Dados
-- [ ] Tabela `leads` — `id`, `workspace_id`, `name`, `email`, `phone`, `company`, `role`, `status`, `assigned_to`, `created_at`, `updated_at`
-- [ ] Status enum: `new`, `contacted`, `qualified`, `lost`
-- [ ] RLS — filtra por `workspace_id` via member check
-- [ ] Índices em `workspace_id`, `status`, `assigned_to`
+- [x] Tabela `leads` — `id`, `workspace_id`, `name`, `email`, `phone`, `company`, `role`, `status`, `assigned_to`, `created_at`, `updated_at`
+- [x] Status enum: `new`, `contacted`, `qualified`, `lost`
+- [x] RLS — filtra por `workspace_id` via member check
+- [x] Índices em `workspace_id`, `status`, `assigned_to`
 
 #### UI — Lista de Leads (construir com mock data primeiro)
 - [x] `app/(dashboard)/leads/page.tsx` — listagem em tabela
@@ -207,10 +207,10 @@ feat: leads — CRUD, list with search/filters, lead detail page
 ### Entregas
 
 #### Banco de Dados
-- [ ] Tabela `deals` — `id`, `workspace_id`, `title`, `value`, `stage`, `lead_id`, `assigned_to`, `deadline`, `position`, `created_at`, `updated_at`
-- [ ] Stage enum: `new_lead`, `contacted`, `proposal_sent`, `negotiation`, `won`, `lost`
-- [ ] RLS — filtra por `workspace_id`
-- [ ] Índice em `workspace_id`, `stage`, `position`
+- [x] Tabela `deals` — `id`, `workspace_id`, `title`, `value`, `stage`, `lead_id`, `assigned_to`, `deadline`, `position`, `created_at`, `updated_at`
+- [x] Stage enum: `new_lead`, `contacted`, `proposal_sent`, `negotiation`, `won`, `lost`
+- [x] RLS — filtra por `workspace_id`
+- [x] Índice em `workspace_id`, `stage`, `position`
 
 #### Instalação
 - [x] `npm install @dnd-kit/core @dnd-kit/sortable @dnd-kit/utilities`
@@ -257,10 +257,10 @@ feat: pipeline — Kanban board with drag-and-drop, deals CRUD, stage persistenc
 ### Entregas
 
 #### Banco de Dados
-- [ ] Tabela `activities` — `id`, `workspace_id`, `lead_id`, `author_id`, `type`, `description`, `activity_date`, `created_at`
-- [ ] Type enum: `call`, `email`, `meeting`, `note`
-- [ ] RLS — filtra por `workspace_id`
-- [ ] Índice em `lead_id`, `activity_date DESC`
+- [x] Tabela `activities` — `id`, `workspace_id`, `lead_id`, `author_id`, `type`, `description`, `activity_date`, `created_at`
+- [x] Type enum: `call`, `email`, `meeting`, `note`
+- [x] RLS — filtra por `workspace_id`
+- [x] Índice em `lead_id`, `activity_date DESC`
 
 #### UI — Timeline (na página de detalhe do lead)
 - [ ] `components/leads/activity-timeline.tsx` — lista cronológica de atividades
@@ -339,8 +339,8 @@ feat: dashboard — metrics cards, sales funnel chart, upcoming deadlines
 ### Entregas
 
 #### Banco de Dados
-- [ ] Tabela `workspace_invites` — `id`, `workspace_id`, `email`, `role`, `token`, `invited_by`, `accepted_at`, `expires_at`, `created_at`
-- [ ] RLS — apenas admin do workspace vê e cria convites
+- [x] Tabela `workspace_invites` — `id`, `workspace_id`, `email`, `role`, `token`, `invited_by`, `accepted_at`, `expires_at`, `created_at`
+- [x] RLS — apenas admin do workspace vê e cria convites
 
 #### Instalação
 - [x] `npm install resend`
@@ -389,7 +389,7 @@ feat: invites — email invitations via Resend, invite acceptance flow, member m
 - [ ] Criar produto e preço no Stripe Dashboard (R$ 49/mês)
 
 #### Banco de Dados
-- [ ] Adicionar colunas em `workspaces`: `stripe_customer_id`, `stripe_subscription_id`, `plan_status` (active/canceled/trialing)
+- [x] Adicionar colunas em `workspaces`: `stripe_customer_id`, `stripe_subscription_id`, `plan_status` (active/canceled/trialing)
 - [ ] Atualizar RLS/checks de limite: max 2 membros e 50 leads no plano Free
 
 #### UI — Planos e Upgrade

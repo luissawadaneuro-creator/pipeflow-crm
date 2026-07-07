@@ -86,26 +86,31 @@ alter table public.workspace_members enable row level security;
 
 -- workspaces: any member can read; only admins can update/delete; any
 -- authenticated user can create a workspace (they become its owner).
+-- The owner_id check lets INSERT ... RETURNING succeed before the creator's
+-- workspace_members row exists (see createWorkspace() Server Action).
 create policy "workspaces_select_members"
   on public.workspaces for select
   to authenticated
-  using (public.is_workspace_member(id, auth.uid()));
+  using (
+    owner_id = (select auth.uid())
+    or public.is_workspace_member(id, (select auth.uid()))
+  );
 
 create policy "workspaces_insert_authenticated"
   on public.workspaces for insert
   to authenticated
-  with check (owner_id = auth.uid());
+  with check (owner_id = (select auth.uid()));
 
 create policy "workspaces_update_admins"
   on public.workspaces for update
   to authenticated
-  using (public.is_workspace_admin(id, auth.uid()))
-  with check (public.is_workspace_admin(id, auth.uid()));
+  using (public.is_workspace_admin(id, (select auth.uid())))
+  with check (public.is_workspace_admin(id, (select auth.uid())));
 
 create policy "workspaces_delete_admins"
   on public.workspaces for delete
   to authenticated
-  using (public.is_workspace_admin(id, auth.uid()));
+  using (public.is_workspace_admin(id, (select auth.uid())));
 
 -- workspace_members: members can see their own workspace's roster;
 -- only admins can add/remove/change members. A user can always see their
@@ -114,28 +119,28 @@ create policy "workspace_members_select_same_workspace"
   on public.workspace_members for select
   to authenticated
   using (
-    user_id = auth.uid()
-    or public.is_workspace_member(workspace_id, auth.uid())
+    user_id = (select auth.uid())
+    or public.is_workspace_member(workspace_id, (select auth.uid()))
   );
 
 create policy "workspace_members_insert_admins_or_self_owner"
   on public.workspace_members for insert
   to authenticated
   with check (
-    public.is_workspace_admin(workspace_id, auth.uid())
+    public.is_workspace_admin(workspace_id, (select auth.uid()))
     or exists (
       select 1 from public.workspaces w
-      where w.id = workspace_id and w.owner_id = auth.uid()
+      where w.id = workspace_id and w.owner_id = (select auth.uid())
     )
   );
 
 create policy "workspace_members_update_admins"
   on public.workspace_members for update
   to authenticated
-  using (public.is_workspace_admin(workspace_id, auth.uid()))
-  with check (public.is_workspace_admin(workspace_id, auth.uid()));
+  using (public.is_workspace_admin(workspace_id, (select auth.uid())))
+  with check (public.is_workspace_admin(workspace_id, (select auth.uid())));
 
 create policy "workspace_members_delete_admins"
   on public.workspace_members for delete
   to authenticated
-  using (public.is_workspace_admin(workspace_id, auth.uid()));
+  using (public.is_workspace_admin(workspace_id, (select auth.uid())));

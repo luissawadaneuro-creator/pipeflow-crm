@@ -7,6 +7,7 @@ import { Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { signUp } from './actions'
 
 interface FieldErrors {
   name?: string
@@ -43,11 +44,17 @@ export default function SignupPage() {
     if (Object.keys(fieldErrors).length > 0) return
 
     setLoading(true)
-    await new Promise((r) => setTimeout(r, 1000))
+    const result = await signUp(name, email, password)
     setLoading(false)
+
+    if (result.error) {
+      setGlobalError(result.error)
+      return
+    }
 
     // After signup, go to onboarding to create the first workspace
     router.push('/onboarding')
+    router.refresh()
   }
 
   return (
