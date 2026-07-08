@@ -174,23 +174,23 @@ feat: workspaces — multi-tenant setup, workspace switcher, RLS policies
 - [x] Skeleton loader para estado de loading
 
 #### UI — Detalhe do Lead
-- [x] `app/(dashboard)/leads/[id]/page.tsx` — página de detalhe
+- [x] `app/(dashboard)/leads/[id]/page.tsx` — página de detalhe, Server Component com dados reais
 - [x] `components/leads/lead-profile.tsx` — card com dados completos do lead
-- [x] Seção de atividades (placeholder para M6)
-- [x] Seção de negócios vinculados (placeholder para M5)
+- [x] Seção de atividades — implementada em M6, timeline real conectada ao Supabase
+- [x] Seção de negócios vinculados — placeholder textual apontando para o Pipeline (não há listagem embutida de deals do lead)
 - [ ] Breadcrumb: Leads > [Nome do Lead] — existe apenas botão "voltar", sem breadcrumb completo
 
 #### Lógica
-- [ ] Server Action `createLead` — implementado como estado local (mock), sem persistência real
-- [ ] Server Action `updateLead` — implementado como estado local (mock), sem persistência real
-- [ ] Server Action `deleteLead` — implementado como estado local (mock), sem persistência real
-- [ ] Busca e filtros via query params na URL (sem estado client) — atualmente via estado client, não URL
+- [x] Server Action `createLead` em `app/(dashboard)/leads/actions.ts` — persistência real no Supabase
+- [x] Server Action `updateLead` em `app/(dashboard)/leads/actions.ts` — persistência real no Supabase
+- [x] Server Action `deleteLead` em `app/(dashboard)/leads/actions.ts` — persistência real (restrito a admins via RLS)
+- [x] Busca e filtros via query params na URL — `getLeads` filtra no banco (`ilike` para busca, `eq` para status/responsável) a partir dos `searchParams` lidos no Server Component
 
 #### Verificação
-- [x] Criar, editar e deletar lead funciona (em memória, sem persistência)
-- [x] Busca por nome filtra em tempo real (ou ao submeter)
-- [x] Filtro por status funciona
-- [x] Página de detalhe carrega dados corretos (mock)
+- [x] Criar, editar e deletar lead funciona com persistência real no Supabase (testado: reload mantém o lead criado)
+- [x] Busca por nome/empresa filtra via query no banco
+- [x] Filtro por status e por responsável funciona via query no banco
+- [x] Página de detalhe carrega dados reais do lead e dos membros do workspace
 
 ### Commit Final
 ```
@@ -228,17 +228,17 @@ feat: leads — CRUD, list with search/filters, lead detail page
 - [x] `useDraggable` / `useDroppable` via @dnd-kit nos cards e colunas
 - [x] `onDragEnd` calcula novo `stage` e nova `position`
 - [x] Atualização otimista do estado local antes da confirmação do server
-- [ ] Server Action `updateDealStage(dealId, stage, position)` — persistência real ainda não implementada
+- [x] Server Action `updateDealStage` em `app/(dashboard)/pipeline/actions.ts` — persiste `stage`/`position` em lote no Supabase; erro reverte via `router.refresh()`
 
 #### Lógica
-- [ ] Server Action `createDeal` — implementado como estado local (mock), sem persistência real
-- [ ] Server Action `updateDeal` — implementado como estado local (mock), sem persistência real
-- [ ] Server Action `deleteDeal` — não implementado
+- [x] Server Action `createDeal` em `app/(dashboard)/pipeline/actions.ts` — persistência real no Supabase
+- [x] Server Action `updateDeal` em `app/(dashboard)/pipeline/actions.ts` — persistência real no Supabase
+- [x] Server Action `deleteDeal` em `app/(dashboard)/pipeline/actions.ts` — persistência real (restrito a admins via RLS)
 - [x] Reordenação de posição dentro da mesma coluna
 
 #### Verificação
 - [x] Cards aparecem na coluna correta
-- [ ] Drag-and-drop move card e persiste no banco (move e reordena em memória, sem banco)
+- [x] Drag-and-drop move card e persiste no banco (confirmado via Supabase Studio/REST após o teste manual)
 - [x] Criar novo negócio via botão na coluna
 - [x] Valor total por coluna calcula corretamente
 
