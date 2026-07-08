@@ -4,9 +4,10 @@ import Link from 'next/link'
 import { LeadProfile } from '@/components/leads/lead-profile'
 import { ActivityTimeline } from '@/components/leads/activity-timeline'
 import { LeadDetailActions } from '@/components/leads/lead-detail-actions'
+import { NewActivityButton } from '@/components/leads/new-activity-button'
 import { createClient } from '@/lib/supabase/server'
 import { getActiveWorkspaceContext } from '@/lib/supabase/workspace-context'
-import { getLead, getWorkspaceMembers } from '@/lib/supabase/queries'
+import { getLead, getWorkspaceMembers, getActivities } from '@/lib/supabase/queries'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -18,9 +19,10 @@ export default async function LeadDetailPage({ params }: PageProps) {
   const context = await getActiveWorkspaceContext(supabase)
   if (!context) redirect('/login')
 
-  const [lead, members] = await Promise.all([
+  const [lead, members, activities] = await Promise.all([
     getLead(supabase, context.workspaceId, id),
     getWorkspaceMembers(supabase, context.workspaceId),
+    getActivities(supabase, context.workspaceId, id),
   ])
 
   if (!lead) notFound()
@@ -64,11 +66,9 @@ export default async function LeadDetailPage({ params }: PageProps) {
         <div className="lg:col-span-2 space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-medium text-foreground">Atividades</h3>
+            <NewActivityButton leadId={lead.id} />
           </div>
-          <ActivityTimeline activities={[]} />
-          <p className="text-xs text-muted-foreground text-center">
-            Registro de atividades disponível no M6.
-          </p>
+          <ActivityTimeline activities={activities} members={members} />
         </div>
       </div>
     </div>

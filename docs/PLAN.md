@@ -263,22 +263,22 @@ feat: pipeline — Kanban board with drag-and-drop, deals CRUD, stage persistenc
 - [x] Índice em `lead_id`, `activity_date DESC`
 
 #### UI — Timeline (na página de detalhe do lead)
-- [ ] `components/leads/activity-timeline.tsx` — lista cronológica de atividades
-- [ ] `components/leads/activity-item.tsx` — item com ícone por tipo, autor, data, descrição
-- [ ] `components/leads/activity-form.tsx` — form inline ou Dialog para registrar nova atividade
-- [ ] Ícones por tipo: telefone (call), envelope (email), calendário (meeting), nota (note)
-- [ ] Formatação de data relativa ("há 2 dias", "hoje às 14h")
+- [x] `components/leads/activity-timeline.tsx` — lista cronológica de atividades
+- [x] Item de atividade com ícone por tipo, autor, data, descrição — inline no `activity-timeline.tsx`, sem `activity-item.tsx` separado (não havia necessidade de reuso fora da timeline)
+- [x] `components/leads/activity-form.tsx` — Dialog para registrar nova atividade, aberto via `new-activity-button.tsx`
+- [x] Ícones por tipo: telefone (call), envelope (email), calendário (meeting), nota (note)
+- [x] Formatação de data relativa ("há 2 dias", "hoje às 14h")
 
 #### Lógica
-- [ ] Server Action `createActivity(leadId, type, description, date)`
-- [ ] Busca de atividades ordenada por `activity_date DESC`
-- [ ] Autor preenchido automaticamente pelo usuário logado
+- [x] Server Action `createActivity` em `app/(dashboard)/leads/activities-actions.ts` — recebe `{ leadId, type, description, date }`
+- [x] Busca de atividades ordenada por `activity_date DESC` via `getActivities` em `lib/supabase/queries.ts`
+- [x] Autor preenchido automaticamente pelo usuário logado (`author_id` = usuário da sessão, exigido pela RLS)
 
 #### Verificação
-- [ ] Registrar atividade de cada tipo (call, email, meeting, note)
-- [ ] Timeline exibe em ordem cronológica decrescente
-- [ ] Autor e data exibidos corretamente
-- [ ] Atividade aparece na página do lead sem reload (otimista ou revalidação)
+- [x] Registrar atividade de cada tipo (call, email, meeting, note)
+- [x] Timeline exibe em ordem cronológica decrescente
+- [x] Autor e data exibidos corretamente (autor resolvido via `getWorkspaceMembers`, mesmo padrão do "responsável" em leads/deals)
+- [x] Atividade aparece na página do lead após `router.refresh()` (revalidação via Server Action + `revalidatePath`, não otimista)
 
 ### Commit Final
 ```

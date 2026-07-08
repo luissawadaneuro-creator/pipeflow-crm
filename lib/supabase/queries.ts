@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '@/types/supabase'
-import type { Workspace, Lead, Deal, LeadStatus, DealStage, Member } from '@/types'
+import type { Workspace, Lead, Deal, LeadStatus, DealStage, Member, Activity } from '@/types'
 
 export async function getUserWorkspaces(
   supabase: SupabaseClient<Database>,
@@ -207,4 +207,20 @@ export async function getUpcomingDeals(
 
   if (error || !data) return []
   return data as unknown as DealWithLead[]
+}
+
+export async function getActivities(
+  supabase: SupabaseClient<Database>,
+  workspaceId: string,
+  leadId: string
+): Promise<Activity[]> {
+  const { data, error } = await supabase
+    .from('activities')
+    .select('*')
+    .eq('workspace_id', workspaceId)
+    .eq('lead_id', leadId)
+    .order('activity_date', { ascending: false })
+
+  if (error || !data) return []
+  return data
 }

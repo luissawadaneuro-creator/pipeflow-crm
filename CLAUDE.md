@@ -204,9 +204,9 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 | M1.5 | App Shell | Sidebar responsiva, header, workspace switcher, dark mode | ✅ Done |
 | M2 | Auth | Login, signup, reset-password, middleware | ⏳ Pending |
 | M3 | Workspaces | Create, switch, RLS setup | ⏳ Pending |
-| M4 | Leads | CRUD, list with filters, detail page | ⏳ Pending |
-| M5 | Pipeline | Kanban board with drag-and-drop | ⏳ Pending |
-| M6 | Activities | Timeline per lead (call/email/meeting/note) | ⏳ Pending |
+| M4 | Leads | CRUD, list with filters, detail page | ✅ Done |
+| M5 | Pipeline | Kanban board with drag-and-drop | ✅ Done |
+| M6 | Activities | Timeline per lead (call/email/meeting/note) | ✅ Done |
 | M7 | Dashboard | Metrics cards + funnel chart | ⏳ Pending |
 | M8 | Invites | Email invites via Resend | ⏳ Pending |
 | M9 | Stripe | Plans, checkout, webhook, portal | ⏳ Pending |
