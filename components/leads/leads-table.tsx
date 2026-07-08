@@ -153,14 +153,14 @@ export function LeadsTable({ leads, members }: LeadsTableProps) {
                         <DropdownMenuGroup>
                           <DropdownMenuItem
                             className="cursor-pointer text-sm gap-2"
-                            onSelect={() => router.push(`/leads/${lead.id}`)}
+                            onClick={() => router.push(`/leads/${lead.id}`)}
                           >
                             <ExternalLink className="w-3.5 h-3.5" />
                             Ver detalhe
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             className="cursor-pointer text-sm gap-2"
-                            onSelect={() => setEditingLead(lead)}
+                            onClick={() => setEditingLead(lead)}
                           >
                             <Pencil className="w-3.5 h-3.5" />
                             Editar
@@ -170,7 +170,7 @@ export function LeadsTable({ leads, members }: LeadsTableProps) {
                         <DropdownMenuGroup>
                           <DropdownMenuItem
                             className="cursor-pointer text-sm gap-2 text-destructive focus:text-destructive"
-                            onSelect={() => setDeletingLead(lead)}
+                            onClick={() => setDeletingLead(lead)}
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                             Excluir
