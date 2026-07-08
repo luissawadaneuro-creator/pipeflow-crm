@@ -1,5 +1,5 @@
 import { Phone, Mail, Calendar, FileText } from 'lucide-react'
-import type { ActivityType } from '@/types'
+import type { Activity, ActivityType, Member } from '@/types'
 
 const ACTIVITY_CONFIG: Record<ActivityType, {
   label: string
@@ -33,15 +33,6 @@ const ACTIVITY_CONFIG: Record<ActivityType, {
   },
 }
 
-interface ActivityItem {
-  id: string
-  lead_id: string
-  type: ActivityType
-  description: string
-  author: string
-  date: string
-}
-
 function formatRelative(iso: string) {
   const diff = Date.now() - new Date(iso).getTime()
   const days = Math.floor(diff / 86_400_000)
@@ -56,10 +47,16 @@ function formatTime(iso: string) {
 }
 
 interface ActivityTimelineProps {
-  activities: ActivityItem[]
+  activities: Activity[]
+  members: Member[]
 }
 
-export function ActivityTimeline({ activities }: ActivityTimelineProps) {
+export function ActivityTimeline({ activities, members }: ActivityTimelineProps) {
+  function authorLabel(authorId: string) {
+    const member = members.find((m) => m.user_id === authorId)
+    return member?.full_name || member?.email || authorId
+  }
+
   if (activities.length === 0) {
     return (
       <div className="rounded-xl border border-border bg-card p-8 text-center">
@@ -90,11 +87,11 @@ export function ActivityTimeline({ activities }: ActivityTimelineProps) {
               <div className="flex items-center justify-between gap-2 mb-1">
                 <span className={`text-xs font-semibold ${config.color}`}>{config.label}</span>
                 <span className="text-xs text-muted-foreground shrink-0">
-                  {formatRelative(activity.date)} · {formatTime(activity.date)}
+                  {formatRelative(activity.activity_date)} · {formatTime(activity.activity_date)}
                 </span>
               </div>
               <p className="text-sm text-foreground leading-relaxed">{activity.description}</p>
-              <p className="text-xs text-muted-foreground mt-1.5">por {activity.author}</p>
+              <p className="text-xs text-muted-foreground mt-1.5">por {authorLabel(activity.author_id)}</p>
             </div>
           </div>
         )

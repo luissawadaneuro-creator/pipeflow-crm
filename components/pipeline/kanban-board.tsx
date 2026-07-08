@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import {
   DndContext,
   DragOverlay,
@@ -16,17 +18,25 @@ import {
 import { sortableKeyboardCoordinates, arrayMove } from '@dnd-kit/sortable'
 import { KanbanColumn } from '@/components/pipeline/kanban-column'
 import { DealCard } from '@/components/pipeline/deal-card'
-import { DealForm } from '@/components/pipeline/deal-form'
-import { MOCK_DEALS, PIPELINE_MEMBERS } from '@/lib/mock-pipeline'
-import type { Deal, DealStage } from '@/types'
+import { DealForm, type DealFormFields } from '@/components/pipeline/deal-form'
+import { createDeal, updateDeal, updateDealStage } from '@/app/(dashboard)/pipeline/actions'
+import type { DealWithLead } from '@/lib/supabase/queries'
+import type { DealStage, Lead, Member } from '@/types'
 
 const STAGES: DealStage[] = ['new_lead', 'contacted', 'proposal_sent', 'negotiation', 'won', 'lost']
 
-export function KanbanBoard() {
-  const [deals, setDeals] = useState<Deal[]>(MOCK_DEALS)
+interface KanbanBoardProps {
+  initialDeals: DealWithLead[]
+  leads: Lead[]
+  members: Member[]
+}
+
+export function KanbanBoard({ initialDeals, leads, members }: KanbanBoardProps) {
+  const router = useRouter()
+  const [deals, setDeals] = useState<DealWithLead[]>(initialDeals)
   const [activeId, setActiveId] = useState<string | null>(null)
   const [formOpen, setFormOpen] = useState(false)
-  const [editingDeal, setEditingDeal] = useState<Deal | null>(null)
+  const [editingDeal, setEditingDeal] = useState<DealWithLead | null>(null)
   const [defaultStage, setDefaultStage] = useState<DealStage>('new_lead')
 
   const sensors = useSensors(
@@ -74,45 +84,62 @@ export function KanbanBoard() {
     setActiveId(null)
 
     const activeId = active.id as string
+    const activeDeal = deals.find(d => d.id === activeId)
+    if (!activeDeal) return
 
-    setDeals(prev => {
-      const activeDeal = prev.find(d => d.id === activeId)
-      if (!activeDeal) return prev
+    let next = deals
 
-      // If dropped on a card in the same column, reorder
-      if (over && over.id !== activeId) {
-        const overId = over.id as string
-        const overDeal = prev.find(d => d.id === overId)
-        if (overDeal && overDeal.stage === activeDeal.stage) {
-          const stageDeals = prev
-            .filter(d => d.stage === activeDeal.stage)
-            .sort((a, b) => a.position - b.position)
-          const oldIdx = stageDeals.findIndex(d => d.id === activeId)
-          const newIdx = stageDeals.findIndex(d => d.id === overId)
-          if (oldIdx !== -1 && newIdx !== -1) {
-            const reordered = arrayMove(stageDeals, oldIdx, newIdx).map((d, i) => ({
-              ...d,
-              position: i,
-            }))
-            return prev.map(d => reordered.find(r => r.id === d.id) ?? d)
-          }
+    // If dropped on a card in the same column, reorder
+    if (over && over.id !== activeId) {
+      const overId = over.id as string
+      const overDeal = deals.find(d => d.id === overId)
+      if (overDeal && overDeal.stage === activeDeal.stage) {
+        const stageDeals = deals
+          .filter(d => d.stage === activeDeal.stage)
+          .sort((a, b) => a.position - b.position)
+        const oldIdx = stageDeals.findIndex(d => d.id === activeId)
+        const newIdx = stageDeals.findIndex(d => d.id === overId)
+        if (oldIdx !== -1 && newIdx !== -1) {
+          const reordered = arrayMove(stageDeals, oldIdx, newIdx).map((d, i) => ({
+            ...d,
+            position: i,
+          }))
+          next = deals.map(d => reordered.find(r => r.id === d.id) ?? d)
         }
       }
+    }
 
-      // Always normalise positions for all stages (handles cross-column drops too)
-      const stageMap = new Map<DealStage, Deal[]>()
-      for (const d of prev) {
-        const list = stageMap.get(d.stage) ?? []
-        list.push(d)
-        stageMap.set(d.stage, list)
-      }
-      const normalised: Deal[] = []
-      stageMap.forEach((list) => {
-        list.sort((a, b) => a.position - b.position)
-        list.forEach((d, i) => normalised.push({ ...d, position: i }))
-      })
-      return normalised
+    // Always normalise positions for all stages (handles cross-column drops too)
+    const stageMap = new Map<DealStage, DealWithLead[]>()
+    for (const d of next) {
+      const list = stageMap.get(d.stage) ?? []
+      list.push(d)
+      stageMap.set(d.stage, list)
+    }
+    const normalised: DealWithLead[] = []
+    stageMap.forEach((list) => {
+      list.sort((a, b) => a.position - b.position)
+      list.forEach((d, i) => normalised.push({ ...d, position: i }))
     })
+
+    const originalById = new Map(deals.map(d => [d.id, d]))
+    const changed = normalised.filter(d => {
+      const original = originalById.get(d.id)
+      return original && (original.stage !== d.stage || original.position !== d.position)
+    })
+
+    setDeals(normalised)
+
+    if (changed.length > 0) {
+      updateDealStage(changed.map(d => ({ id: d.id, stage: d.stage, position: d.position }))).then(
+        (result) => {
+          if (result.error) {
+            toast.error(result.error)
+            router.refresh()
+          }
+        }
+      )
+    }
   }
 
   function handleAddDeal(stage: DealStage) {
@@ -121,59 +148,26 @@ export function KanbanBoard() {
     setFormOpen(true)
   }
 
-  function handleEditDeal(deal: Deal) {
+  function handleEditDeal(deal: DealWithLead) {
     setEditingDeal(deal)
     setDefaultStage(deal.stage)
     setFormOpen(true)
   }
 
-  function handleSave(data: {
-    title: string
-    value: string
-    lead_id: string
-    assigned_to: string
-    stage: DealStage
-    deadline: string
-  }) {
-    const valueNum = parseFloat(data.value.replace(',', '.')) || 0
+  async function handleSave(data: DealFormFields) {
+    const result = editingDeal
+      ? await updateDeal(editingDeal.id, data)
+      : await createDeal(data)
 
-    if (editingDeal) {
-      setDeals(prev =>
-        prev.map(d =>
-          d.id === editingDeal.id
-            ? {
-                ...d,
-                title: data.title,
-                value: valueNum,
-                lead_id: data.lead_id || null,
-                assigned_to: data.assigned_to || null,
-                stage: data.stage,
-                deadline: data.deadline ? `${data.deadline}T00:00:00Z` : null,
-                updated_at: new Date().toISOString(),
-              }
-            : d
-        )
-      )
-    } else {
-      const stageDeals = deals.filter(d => d.stage === data.stage)
-      const newDeal: Deal = {
-        id: `d${Date.now()}`,
-        workspace_id: 'ws-1',
-        title: data.title,
-        value: valueNum,
-        stage: data.stage,
-        lead_id: data.lead_id || null,
-        assigned_to: data.assigned_to || null,
-        deadline: data.deadline ? `${data.deadline}T00:00:00Z` : null,
-        position: stageDeals.length,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      }
-      setDeals(prev => [...prev, newDeal])
+    if (result.error) {
+      toast.error(result.error)
+      return
     }
 
+    toast.success(editingDeal ? 'Negócio atualizado com sucesso.' : 'Negócio criado com sucesso.')
     setFormOpen(false)
     setEditingDeal(null)
+    router.refresh()
   }
 
   return (
@@ -194,6 +188,7 @@ export function KanbanBoard() {
               deals={dealsByStage(stage)}
               onAddDeal={handleAddDeal}
               onEditDeal={handleEditDeal}
+              members={members}
             />
           ))}
         </div>
@@ -203,7 +198,7 @@ export function KanbanBoard() {
           easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)',
         }}>
           {activeDeal && (
-            <DealCard deal={activeDeal} onEdit={() => {}} overlay />
+            <DealCard deal={activeDeal} onEdit={() => {}} overlay members={members} />
           )}
         </DragOverlay>
       </DndContext>
@@ -214,6 +209,8 @@ export function KanbanBoard() {
         onSave={handleSave}
         deal={editingDeal}
         defaultStage={defaultStage}
+        leads={leads}
+        members={members}
       />
     </div>
   )

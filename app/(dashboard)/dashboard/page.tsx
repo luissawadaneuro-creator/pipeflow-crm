@@ -1,8 +1,11 @@
+import { redirect } from 'next/navigation'
 import { Users, Briefcase, Wallet, TrendingUp } from 'lucide-react'
 import { MetricCard } from '@/components/dashboard/metric-card'
 import { FunnelChart } from '@/components/dashboard/funnel-chart'
 import { UpcomingDeals } from '@/components/dashboard/upcoming-deals'
-import { getDashboardMetrics, getDealsByStage, getUpcomingDeals } from '@/lib/mock-dashboard'
+import { createClient } from '@/lib/supabase/server'
+import { getActiveWorkspaceContext } from '@/lib/supabase/workspace-context'
+import { getDashboardMetrics, getDealsByStage, getUpcomingDeals } from '@/lib/supabase/queries'
 
 function formatBRL(value: number) {
   return new Intl.NumberFormat('pt-BR', {
@@ -13,10 +16,16 @@ function formatBRL(value: number) {
   }).format(value)
 }
 
-export default function DashboardPage() {
-  const metrics = getDashboardMetrics()
-  const funnelData = getDealsByStage()
-  const upcomingDeals = getUpcomingDeals()
+export default async function DashboardPage() {
+  const supabase = await createClient()
+  const context = await getActiveWorkspaceContext(supabase)
+  if (!context) redirect('/login')
+
+  const [metrics, funnelData, upcomingDeals] = await Promise.all([
+    getDashboardMetrics(supabase, context.workspaceId),
+    getDealsByStage(supabase, context.workspaceId),
+    getUpcomingDeals(supabase, context.workspaceId),
+  ])
 
   return (
     <div>
@@ -29,25 +38,21 @@ export default function DashboardPage() {
             label="Total de Leads"
             value={metrics.totalLeads.toString()}
             icon={Users}
-            change={12}
           />
           <MetricCard
             label="Negócios Abertos"
             value={metrics.openDeals.toString()}
             icon={Briefcase}
-            change={8}
           />
           <MetricCard
             label="Valor do Pipeline"
             value={formatBRL(metrics.pipelineValue)}
             icon={Wallet}
-            change={15}
           />
           <MetricCard
             label="Taxa de Conversão"
             value={`${metrics.conversionRate.toFixed(0)}%`}
             icon={TrendingUp}
-            change={-4}
           />
         </div>
 

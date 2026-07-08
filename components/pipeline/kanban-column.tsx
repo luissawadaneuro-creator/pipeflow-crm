@@ -5,7 +5,8 @@ import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { Plus } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { DealCard } from '@/components/pipeline/deal-card'
-import type { Deal, DealStage } from '@/types'
+import type { DealWithLead } from '@/lib/supabase/queries'
+import type { DealStage, Member } from '@/types'
 
 export const STAGE_CONFIG: Record<DealStage, {
   label: string
@@ -64,12 +65,13 @@ function formatBRL(value: number) {
 
 interface KanbanColumnProps {
   stage: DealStage
-  deals: Deal[]
+  deals: DealWithLead[]
   onAddDeal: (stage: DealStage) => void
-  onEditDeal: (deal: Deal) => void
+  onEditDeal: (deal: DealWithLead) => void
+  members?: Member[]
 }
 
-export function KanbanColumn({ stage, deals, onAddDeal, onEditDeal }: KanbanColumnProps) {
+export function KanbanColumn({ stage, deals, onAddDeal, onEditDeal, members = [] }: KanbanColumnProps) {
   const cfg = STAGE_CONFIG[stage]
   const { setNodeRef, isOver } = useDroppable({ id: stage })
 
@@ -166,6 +168,7 @@ export function KanbanColumn({ stage, deals, onAddDeal, onEditDeal }: KanbanColu
               onEdit={onEditDeal}
               stageColor={cfg.color}
               stageGlow={cfg.glowColor}
+              members={members}
             />
           ))}
 

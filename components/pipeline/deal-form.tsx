@@ -19,11 +19,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { MOCK_LEADS, MOCK_MEMBERS } from '@/lib/mock-leads'
 import { STAGE_CONFIG } from '@/components/pipeline/kanban-column'
-import type { Deal, DealStage } from '@/types'
+import type { DealWithLead } from '@/lib/supabase/queries'
+import type { DealStage, Lead, Member } from '@/types'
 
-interface FormFields {
+export interface DealFormFields {
   title: string
   value: string
   lead_id: string
@@ -32,27 +32,34 @@ interface FormFields {
   deadline: string
 }
 
+function memberLabel(member: Member) {
+  return member.full_name || member.email || member.user_id
+}
+
 interface DealFormProps {
   open: boolean
   onClose: () => void
-  onSave: (data: FormFields) => void
-  deal?: Deal | null
+  onSave: (data: DealFormFields) => void | Promise<void>
+  deal?: DealWithLead | null
   defaultStage?: DealStage
+  leads: Lead[]
+  members: Member[]
 }
 
-export function DealForm({ open, onClose, onSave, deal, defaultStage = 'new_lead' }: DealFormProps) {
+export function DealForm({ open, onClose, onSave, deal, defaultStage = 'new_lead', leads, members }: DealFormProps) {
   const isEditing = !!deal
+  const defaultAssignee = members[0]?.user_id ?? ''
 
-  const empty: FormFields = {
+  const empty: DealFormFields = {
     title: '',
     value: '',
     lead_id: '',
-    assigned_to: MOCK_MEMBERS[0],
+    assigned_to: defaultAssignee,
     stage: defaultStage,
     deadline: '',
   }
 
-  const [fields, setFields] = useState<FormFields>(empty)
+  const [fields, setFields] = useState<DealFormFields>(empty)
   const [errors, setErrors] = useState<{ title?: string; value?: string }>({})
   const [loading, setLoading] = useState(false)
 
@@ -64,7 +71,7 @@ export function DealForm({ open, onClose, onSave, deal, defaultStage = 'new_lead
               title: deal.title,
               value: deal.value > 0 ? String(deal.value) : '',
               lead_id: deal.lead_id ?? '',
-              assigned_to: deal.assigned_to ?? MOCK_MEMBERS[0],
+              assigned_to: deal.assigned_to ?? defaultAssignee,
               stage: deal.stage,
               deadline: deal.deadline ? deal.deadline.slice(0, 10) : '',
             }
@@ -75,7 +82,7 @@ export function DealForm({ open, onClose, onSave, deal, defaultStage = 'new_lead
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, deal, defaultStage])
 
-  function set<K extends keyof FormFields>(key: K, value: FormFields[K]) {
+  function set<K extends keyof DealFormFields>(key: K, value: DealFormFields[K]) {
     setFields(prev => ({ ...prev, [key]: value }))
     if (key in errors) setErrors(prev => ({ ...prev, [key]: undefined }))
   }
@@ -91,9 +98,8 @@ export function DealForm({ open, onClose, onSave, deal, defaultStage = 'new_lead
     if (Object.keys(errs).length > 0) return
 
     setLoading(true)
-    await new Promise(r => setTimeout(r, 600))
+    await onSave(fields)
     setLoading(false)
-    onSave(fields)
   }
 
   const stageEntries = Object.entries(STAGE_CONFIG) as [DealStage, typeof STAGE_CONFIG[DealStage]][]
@@ -160,14 +166,14 @@ export function DealForm({ open, onClose, onSave, deal, defaultStage = 'new_lead
                   <SelectValue>
                     {(v: string) => {
                       if (!v || v === 'none') return 'Nenhum'
-                      const lead = MOCK_LEADS.find(l => l.id === v)
+                      const lead = leads.find(l => l.id === v)
                       return lead ? lead.name : 'Nenhum'
                     }}
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">Nenhum</SelectItem>
-                  {MOCK_LEADS.map(l => (
+                  {leads.map(l => (
                     <SelectItem key={l.id} value={l.id}>
                       {l.name}{l.company ? ` · ${l.company}` : ''}
                     </SelectItem>
@@ -181,15 +187,20 @@ export function DealForm({ open, onClose, onSave, deal, defaultStage = 'new_lead
               <Label>Responsável</Label>
               <Select
                 value={fields.assigned_to}
-                onValueChange={v => set('assigned_to', v ?? MOCK_MEMBERS[0])}
+                onValueChange={v => set('assigned_to', v ?? defaultAssignee)}
                 disabled={loading}
               >
                 <SelectTrigger className="w-full">
-                  <SelectValue>{(v: string) => v}</SelectValue>
+                  <SelectValue>
+                    {(v: string) => {
+                      const member = members.find(m => m.user_id === v)
+                      return member ? memberLabel(member) : v
+                    }}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
-                  {MOCK_MEMBERS.map(m => (
-                    <SelectItem key={m} value={m}>{m}</SelectItem>
+                  {members.map(m => (
+                    <SelectItem key={m.user_id} value={m.user_id}>{memberLabel(m)}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>

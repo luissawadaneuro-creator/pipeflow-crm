@@ -1,7 +1,7 @@
 'use client'
 
 import { Bar, BarChart, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import type { FunnelStagePoint } from '@/lib/mock-dashboard'
+import type { FunnelStagePoint } from '@/lib/supabase/queries'
 
 interface FunnelChartProps {
   data: FunnelStagePoint[]

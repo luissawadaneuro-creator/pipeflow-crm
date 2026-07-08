@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
-import { useCallback } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Search, X } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -12,9 +12,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { MOCK_MEMBERS } from '@/lib/mock-leads'
+import type { Member } from '@/types'
 
-export function LeadsFilters() {
+interface LeadsFiltersProps {
+  members: Member[]
+}
+
+export function LeadsFilters({ members }: LeadsFiltersProps) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -22,6 +26,14 @@ export function LeadsFilters() {
   const q: string = searchParams.get('q') ?? ''
   const status: string = searchParams.get('status') ?? ''
   const assigned: string = searchParams.get('assigned') ?? ''
+
+  const [searchInput, setSearchInput] = useState(q)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Keep local input in sync when the URL changes from elsewhere (e.g. "Limpar")
+  useEffect(() => {
+    setSearchInput(q)
+  }, [q])
 
   const createQuery = useCallback(
     (updates: Record<string, string>) => {
@@ -40,6 +52,14 @@ export function LeadsFilters() {
     router.push(`${pathname}${qs ? `?${qs}` : ''}`)
   }
 
+  function handleSearchChange(value: string) {
+    setSearchInput(value)
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => {
+      push({ q: value, status, assigned })
+    }, 300)
+  }
+
   const hasFilters = q || status || assigned
 
   return (
@@ -50,11 +70,8 @@ export function LeadsFilters() {
         <Input
           className="pl-8 h-8 text-sm"
           placeholder="Buscar por nome ou empresa…"
-          defaultValue={q}
-          onChange={(e) => {
-            // Debounce via onChange → push on each keystroke (acceptable for mock)
-            push({ q: e.target.value, status, assigned })
-          }}
+          value={searchInput}
+          onChange={(e) => handleSearchChange(e.target.value)}
         />
       </div>
 
@@ -81,12 +98,18 @@ export function LeadsFilters() {
         onValueChange={(v) => push({ q, status, assigned: (v ?? '') === 'all' ? '' : (v ?? '') })}
       >
         <SelectTrigger className="h-8 w-40 text-sm">
-          <SelectValue>{(v: string) => v === 'all' ? 'Todos' : v}</SelectValue>
+          <SelectValue>
+            {(v: string) => {
+              if (v === 'all') return 'Todos'
+              const member = members.find((m) => m.user_id === v)
+              return member ? member.full_name || member.email || v : v
+            }}
+          </SelectValue>
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="all">Todos</SelectItem>
-          {MOCK_MEMBERS.map((m) => (
-            <SelectItem key={m} value={m}>{m}</SelectItem>
+          {members.map((m) => (
+            <SelectItem key={m.user_id} value={m.user_id}>{m.full_name || m.email || m.user_id}</SelectItem>
           ))}
         </SelectContent>
       </Select>
@@ -97,7 +120,10 @@ export function LeadsFilters() {
           variant="ghost"
           size="sm"
           className="h-8 gap-1.5 text-muted-foreground hover:text-foreground"
-          onClick={() => router.push(pathname)}
+          onClick={() => {
+            setSearchInput('')
+            router.push(pathname)
+          }}
         >
           <X className="w-3.5 h-3.5" />
           Limpar

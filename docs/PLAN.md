@@ -174,23 +174,23 @@ feat: workspaces — multi-tenant setup, workspace switcher, RLS policies
 - [x] Skeleton loader para estado de loading
 
 #### UI — Detalhe do Lead
-- [x] `app/(dashboard)/leads/[id]/page.tsx` — página de detalhe
+- [x] `app/(dashboard)/leads/[id]/page.tsx` — página de detalhe, Server Component com dados reais
 - [x] `components/leads/lead-profile.tsx` — card com dados completos do lead
-- [x] Seção de atividades (placeholder para M6)
-- [x] Seção de negócios vinculados (placeholder para M5)
+- [x] Seção de atividades — implementada em M6, timeline real conectada ao Supabase
+- [x] Seção de negócios vinculados — placeholder textual apontando para o Pipeline (não há listagem embutida de deals do lead)
 - [ ] Breadcrumb: Leads > [Nome do Lead] — existe apenas botão "voltar", sem breadcrumb completo
 
 #### Lógica
-- [ ] Server Action `createLead` — implementado como estado local (mock), sem persistência real
-- [ ] Server Action `updateLead` — implementado como estado local (mock), sem persistência real
-- [ ] Server Action `deleteLead` — implementado como estado local (mock), sem persistência real
-- [ ] Busca e filtros via query params na URL (sem estado client) — atualmente via estado client, não URL
+- [x] Server Action `createLead` em `app/(dashboard)/leads/actions.ts` — persistência real no Supabase
+- [x] Server Action `updateLead` em `app/(dashboard)/leads/actions.ts` — persistência real no Supabase
+- [x] Server Action `deleteLead` em `app/(dashboard)/leads/actions.ts` — persistência real (restrito a admins via RLS)
+- [x] Busca e filtros via query params na URL — `getLeads` filtra no banco (`ilike` para busca, `eq` para status/responsável) a partir dos `searchParams` lidos no Server Component
 
 #### Verificação
-- [x] Criar, editar e deletar lead funciona (em memória, sem persistência)
-- [x] Busca por nome filtra em tempo real (ou ao submeter)
-- [x] Filtro por status funciona
-- [x] Página de detalhe carrega dados corretos (mock)
+- [x] Criar, editar e deletar lead funciona com persistência real no Supabase (testado: reload mantém o lead criado)
+- [x] Busca por nome/empresa filtra via query no banco
+- [x] Filtro por status e por responsável funciona via query no banco
+- [x] Página de detalhe carrega dados reais do lead e dos membros do workspace
 
 ### Commit Final
 ```
@@ -228,17 +228,17 @@ feat: leads — CRUD, list with search/filters, lead detail page
 - [x] `useDraggable` / `useDroppable` via @dnd-kit nos cards e colunas
 - [x] `onDragEnd` calcula novo `stage` e nova `position`
 - [x] Atualização otimista do estado local antes da confirmação do server
-- [ ] Server Action `updateDealStage(dealId, stage, position)` — persistência real ainda não implementada
+- [x] Server Action `updateDealStage` em `app/(dashboard)/pipeline/actions.ts` — persiste `stage`/`position` em lote no Supabase; erro reverte via `router.refresh()`
 
 #### Lógica
-- [ ] Server Action `createDeal` — implementado como estado local (mock), sem persistência real
-- [ ] Server Action `updateDeal` — implementado como estado local (mock), sem persistência real
-- [ ] Server Action `deleteDeal` — não implementado
+- [x] Server Action `createDeal` em `app/(dashboard)/pipeline/actions.ts` — persistência real no Supabase
+- [x] Server Action `updateDeal` em `app/(dashboard)/pipeline/actions.ts` — persistência real no Supabase
+- [x] Server Action `deleteDeal` em `app/(dashboard)/pipeline/actions.ts` — persistência real (restrito a admins via RLS)
 - [x] Reordenação de posição dentro da mesma coluna
 
 #### Verificação
 - [x] Cards aparecem na coluna correta
-- [ ] Drag-and-drop move card e persiste no banco (move e reordena em memória, sem banco)
+- [x] Drag-and-drop move card e persiste no banco (confirmado via Supabase Studio/REST após o teste manual)
 - [x] Criar novo negócio via botão na coluna
 - [x] Valor total por coluna calcula corretamente
 
@@ -263,22 +263,22 @@ feat: pipeline — Kanban board with drag-and-drop, deals CRUD, stage persistenc
 - [x] Índice em `lead_id`, `activity_date DESC`
 
 #### UI — Timeline (na página de detalhe do lead)
-- [ ] `components/leads/activity-timeline.tsx` — lista cronológica de atividades
-- [ ] `components/leads/activity-item.tsx` — item com ícone por tipo, autor, data, descrição
-- [ ] `components/leads/activity-form.tsx` — form inline ou Dialog para registrar nova atividade
-- [ ] Ícones por tipo: telefone (call), envelope (email), calendário (meeting), nota (note)
-- [ ] Formatação de data relativa ("há 2 dias", "hoje às 14h")
+- [x] `components/leads/activity-timeline.tsx` — lista cronológica de atividades
+- [x] Item de atividade com ícone por tipo, autor, data, descrição — inline no `activity-timeline.tsx`, sem `activity-item.tsx` separado (não havia necessidade de reuso fora da timeline)
+- [x] `components/leads/activity-form.tsx` — Dialog para registrar nova atividade, aberto via `new-activity-button.tsx`
+- [x] Ícones por tipo: telefone (call), envelope (email), calendário (meeting), nota (note)
+- [x] Formatação de data relativa ("há 2 dias", "hoje às 14h")
 
 #### Lógica
-- [ ] Server Action `createActivity(leadId, type, description, date)`
-- [ ] Busca de atividades ordenada por `activity_date DESC`
-- [ ] Autor preenchido automaticamente pelo usuário logado
+- [x] Server Action `createActivity` em `app/(dashboard)/leads/activities-actions.ts` — recebe `{ leadId, type, description, date }`
+- [x] Busca de atividades ordenada por `activity_date DESC` via `getActivities` em `lib/supabase/queries.ts`
+- [x] Autor preenchido automaticamente pelo usuário logado (`author_id` = usuário da sessão, exigido pela RLS)
 
 #### Verificação
-- [ ] Registrar atividade de cada tipo (call, email, meeting, note)
-- [ ] Timeline exibe em ordem cronológica decrescente
-- [ ] Autor e data exibidos corretamente
-- [ ] Atividade aparece na página do lead sem reload (otimista ou revalidação)
+- [x] Registrar atividade de cada tipo (call, email, meeting, note)
+- [x] Timeline exibe em ordem cronológica decrescente
+- [x] Autor e data exibidos corretamente (autor resolvido via `getWorkspaceMembers`, mesmo padrão do "responsável" em leads/deals)
+- [x] Atividade aparece na página do lead após `router.refresh()` (revalidação via Server Action + `revalidatePath`, não otimista)
 
 ### Commit Final
 ```

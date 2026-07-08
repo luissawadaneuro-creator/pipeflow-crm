@@ -286,6 +286,15 @@ export interface Database {
         Args: { p_workspace_id: string; p_user_id: string };
         Returns: boolean;
       };
+      get_workspace_members: {
+        Args: { p_workspace_id: string };
+        Returns: {
+          user_id: string;
+          role: 'admin' | 'member';
+          email: string | null;
+          full_name: string | null;
+        }[];
+      };
     };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;

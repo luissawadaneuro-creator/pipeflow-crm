@@ -15,6 +15,9 @@ export async function loginWithPassword(email: string, password: string): Promis
     if (error.message.toLowerCase().includes('invalid login credentials')) {
       return { error: 'E-mail ou senha incorretos.' }
     }
+    if (error.code === 'email_not_confirmed') {
+      return { error: 'Confirme seu e-mail antes de entrar. Verifique sua caixa de entrada.' }
+    }
     return { error: 'Não foi possível entrar. Tente novamente.' }
   }
 
