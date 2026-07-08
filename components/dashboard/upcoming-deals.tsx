@@ -1,6 +1,5 @@
 import { Calendar } from 'lucide-react'
-import { MOCK_LEADS } from '@/lib/mock-leads'
-import type { Deal } from '@/types'
+import type { DealWithLead } from '@/lib/supabase/queries'
 
 function formatBRL(value: number) {
   return new Intl.NumberFormat('pt-BR', {
@@ -22,7 +21,7 @@ function formatDeadline(iso: string, now: Date): { label: string; urgent: boolea
 }
 
 interface UpcomingDealsProps {
-  deals: Deal[]
+  deals: DealWithLead[]
   now?: Date
 }
 
@@ -55,7 +54,7 @@ export function UpcomingDeals({ deals, now = new Date() }: UpcomingDealsProps) {
       ) : (
         <div className="space-y-1">
           {deals.map(deal => {
-            const lead = MOCK_LEADS.find(l => l.id === deal.lead_id)
+            const lead = deal.lead
             const { label, urgent, overdue } = formatDeadline(deal.deadline as string, now)
 
             return (

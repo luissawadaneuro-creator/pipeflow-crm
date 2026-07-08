@@ -1,6 +1,6 @@
 import { Mail, Phone, Building2, Briefcase, User, Calendar } from 'lucide-react'
 import { LeadStatusBadge } from '@/components/leads/lead-status-badge'
-import type { Lead } from '@/types'
+import type { Lead, Member } from '@/types'
 
 function Row({ icon: Icon, label, value }: {
   icon: React.ElementType
@@ -31,12 +31,16 @@ function formatDate(iso: string) {
 
 interface LeadProfileProps {
   lead: Lead
+  members: Member[]
 }
 
-export function LeadProfile({ lead }: LeadProfileProps) {
+export function LeadProfile({ lead, members }: LeadProfileProps) {
   function initials(name: string) {
     return name.split(' ').filter(Boolean).slice(0, 2).map((n) => n[0]).join('').toUpperCase()
   }
+
+  const assignee = members.find((m) => m.user_id === lead.assigned_to)
+  const assigneeLabel = assignee?.full_name || assignee?.email || lead.assigned_to
 
   return (
     <div className="rounded-xl border border-border bg-card p-6 space-y-5">
@@ -64,7 +68,7 @@ export function LeadProfile({ lead }: LeadProfileProps) {
         <Row icon={Phone} label="Telefone" value={lead.phone} />
         <Row icon={Building2} label="Empresa" value={lead.company} />
         <Row icon={Briefcase} label="Cargo" value={lead.role} />
-        <Row icon={User} label="Responsável" value={lead.assigned_to} />
+        <Row icon={User} label="Responsável" value={assigneeLabel} />
         <Row icon={Calendar} label="Criado em" value={formatDate(lead.created_at)} />
       </div>
     </div>

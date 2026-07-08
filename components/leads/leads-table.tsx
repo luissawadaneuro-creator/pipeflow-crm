@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { MoreHorizontal, Pencil, Trash2, ExternalLink } from 'lucide-react'
+import { toast } from 'sonner'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,8 +21,9 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import { LeadStatusBadge } from '@/components/leads/lead-status-badge'
-import { LeadForm } from '@/components/leads/lead-form'
-import type { Lead } from '@/types'
+import { LeadForm, type LeadFormFields } from '@/components/leads/lead-form'
+import { updateLead, deleteLead } from '@/app/(dashboard)/leads/actions'
+import type { Lead, Member } from '@/types'
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('pt-BR', {
@@ -43,37 +45,43 @@ function initials(name: string) {
 
 interface LeadsTableProps {
   leads: Lead[]
+  members: Member[]
 }
 
-export function LeadsTable({ leads: initialLeads }: LeadsTableProps) {
+export function LeadsTable({ leads, members }: LeadsTableProps) {
   const router = useRouter()
-  const [leads, setLeads] = useState<Lead[]>(initialLeads)
   const [editingLead, setEditingLead] = useState<Lead | null>(null)
-
-  // Sync when parent adds/removes leads (create from page-level form)
-  useEffect(() => {
-    setLeads(initialLeads)
-  }, [initialLeads])
   const [deletingLead, setDeletingLead] = useState<Lead | null>(null)
   const [deleting, setDeleting] = useState(false)
 
-  function handleSave(data: Parameters<typeof LeadForm>[0]['onSave'] extends (d: infer D) => void ? D : never) {
-    setLeads((prev) =>
-      prev.map((l) =>
-        l.id === editingLead!.id
-          ? { ...l, ...data, updated_at: new Date().toISOString() }
-          : l
-      )
-    )
+  function memberLabel(userId: string | null) {
+    if (!userId) return null
+    const member = members.find((m) => m.user_id === userId)
+    return member?.full_name || member?.email || userId
+  }
+
+  async function handleSave(data: LeadFormFields) {
+    const result = await updateLead(editingLead!.id, data)
+    if (result.error) {
+      toast.error(result.error)
+      return
+    }
+    toast.success('Lead atualizado com sucesso.')
     setEditingLead(null)
+    router.refresh()
   }
 
   async function handleDelete() {
     setDeleting(true)
-    await new Promise((r) => setTimeout(r, 600))
-    setLeads((prev) => prev.filter((l) => l.id !== deletingLead!.id))
+    const result = await deleteLead(deletingLead!.id)
     setDeleting(false)
+    if (result.error) {
+      toast.error(result.error)
+      return
+    }
+    toast.success('Lead excluído com sucesso.')
     setDeletingLead(null)
+    router.refresh()
   }
 
   if (leads.length === 0) {
@@ -128,7 +136,7 @@ export function LeadsTable({ leads: initialLeads }: LeadsTableProps) {
                     <LeadStatusBadge status={lead.status} />
                   </td>
                   <td className="px-4 py-3 text-muted-foreground hidden lg:table-cell">
-                    {lead.assigned_to ?? '—'}
+                    {memberLabel(lead.assigned_to) ?? '—'}
                   </td>
                   <td className="px-4 py-3 text-muted-foreground hidden lg:table-cell">
                     {formatDate(lead.created_at)}
@@ -184,6 +192,7 @@ export function LeadsTable({ leads: initialLeads }: LeadsTableProps) {
         onClose={() => setEditingLead(null)}
         onSave={handleSave}
         lead={editingLead}
+        members={members}
       />
 
       {/* Delete confirm dialog */}

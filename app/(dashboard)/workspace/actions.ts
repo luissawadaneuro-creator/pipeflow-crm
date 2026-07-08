@@ -3,8 +3,7 @@
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-
-const ACTIVE_WORKSPACE_COOKIE = 'active_workspace_id'
+import { ACTIVE_WORKSPACE_COOKIE } from '@/lib/supabase/workspace-context'
 
 export interface CreateWorkspaceResult {
   error?: string

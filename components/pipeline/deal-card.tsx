@@ -5,8 +5,8 @@ import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { GripVertical, Calendar, User } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { MOCK_LEADS } from '@/lib/mock-leads'
-import type { Deal } from '@/types'
+import type { DealWithLead } from '@/lib/supabase/queries'
+import type { Member } from '@/types'
 
 function formatBRL(value: number) {
   return new Intl.NumberFormat('pt-BR', {
@@ -38,14 +38,15 @@ function initials(name: string) {
 }
 
 interface DealCardProps {
-  deal: Deal
-  onEdit: (deal: Deal) => void
+  deal: DealWithLead
+  onEdit: (deal: DealWithLead) => void
   overlay?: boolean
   stageColor?: string
   stageGlow?: string
+  members?: Member[]
 }
 
-export function DealCard({ deal, onEdit, overlay = false, stageColor, stageGlow }: DealCardProps) {
+export function DealCard({ deal, onEdit, overlay = false, stageColor, stageGlow, members = [] }: DealCardProps) {
   const [hovered, setHovered] = useState(false)
 
   const {
@@ -74,7 +75,9 @@ export function DealCard({ deal, onEdit, overlay = false, stageColor, stageGlow 
     } : {}),
   }
 
-  const lead = MOCK_LEADS.find(l => l.id === deal.lead_id)
+  const lead = deal.lead
+  const assignee = members.find(m => m.user_id === deal.assigned_to)
+  const assigneeLabel = assignee?.full_name || assignee?.email || deal.assigned_to
 
   return (
     <div
@@ -162,7 +165,7 @@ export function DealCard({ deal, onEdit, overlay = false, stageColor, stageGlow 
                 className="text-[11px] truncate max-w-[80px]"
                 style={{ color: 'var(--pf-text-muted)', fontFamily: 'var(--font-ibm-plex-mono), monospace' }}
               >
-                {deal.assigned_to.split(' ')[0]}
+                {assigneeLabel?.split(' ')[0]}
               </span>
             </div>
           ) : (

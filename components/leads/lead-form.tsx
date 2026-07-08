@@ -19,8 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { MOCK_MEMBERS } from '@/lib/mock-leads'
-import type { Lead, LeadStatus } from '@/types'
+import type { Lead, LeadStatus, Member } from '@/types'
 
 const STATUS_LABELS: Record<LeadStatus, string> = {
   new: 'Novo',
@@ -29,7 +28,7 @@ const STATUS_LABELS: Record<LeadStatus, string> = {
   lost: 'Perdido',
 }
 
-interface FormFields {
+export interface LeadFormFields {
   name: string
   email: string
   phone: string
@@ -44,7 +43,11 @@ interface FieldErrors {
   email?: string
 }
 
-function validate(fields: FormFields): FieldErrors {
+function memberLabel(member: Member) {
+  return member.full_name || member.email || member.user_id
+}
+
+function validate(fields: LeadFormFields): FieldErrors {
   const errors: FieldErrors = {}
   if (!fields.name.trim()) errors.name = 'Nome obrigatório'
   if (fields.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fields.email)) {
@@ -56,24 +59,26 @@ function validate(fields: FormFields): FieldErrors {
 interface LeadFormProps {
   open: boolean
   onClose: () => void
-  onSave: (data: FormFields) => void
+  onSave: (data: LeadFormFields) => void | Promise<void>
   lead?: Lead | null
+  members: Member[]
 }
 
-export function LeadForm({ open, onClose, onSave, lead }: LeadFormProps) {
+export function LeadForm({ open, onClose, onSave, lead, members }: LeadFormProps) {
   const isEditing = !!lead
+  const defaultAssignee = members[0]?.user_id ?? ''
 
-  const emptyFields: FormFields = {
+  const emptyFields: LeadFormFields = {
     name: '',
     email: '',
     phone: '',
     company: '',
     role: '',
     status: 'new',
-    assigned_to: MOCK_MEMBERS[0],
+    assigned_to: defaultAssignee,
   }
 
-  const [fields, setFields] = useState<FormFields>(emptyFields)
+  const [fields, setFields] = useState<LeadFormFields>(emptyFields)
   const [errors, setErrors] = useState<FieldErrors>({})
   const [loading, setLoading] = useState(false)
 
@@ -88,7 +93,7 @@ export function LeadForm({ open, onClose, onSave, lead }: LeadFormProps) {
               company: lead.company ?? '',
               role: lead.role ?? '',
               status: lead.status,
-              assigned_to: lead.assigned_to ?? MOCK_MEMBERS[0],
+              assigned_to: lead.assigned_to ?? defaultAssignee,
             }
           : emptyFields
       )
@@ -97,7 +102,7 @@ export function LeadForm({ open, onClose, onSave, lead }: LeadFormProps) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, lead])
 
-  function set<K extends keyof FormFields>(key: K, value: FormFields[K]) {
+  function set<K extends keyof LeadFormFields>(key: K, value: LeadFormFields[K]) {
     setFields((prev) => ({ ...prev, [key]: value }))
     if (key in errors) setErrors((prev) => ({ ...prev, [key]: undefined }))
   }
@@ -109,9 +114,8 @@ export function LeadForm({ open, onClose, onSave, lead }: LeadFormProps) {
     if (Object.keys(errs).length > 0) return
 
     setLoading(true)
-    await new Promise((r) => setTimeout(r, 700))
+    await onSave(fields)
     setLoading(false)
-    onSave(fields)
   }
 
   return (
@@ -213,15 +217,20 @@ export function LeadForm({ open, onClose, onSave, lead }: LeadFormProps) {
               <Label>Responsável</Label>
               <Select
                 value={fields.assigned_to}
-                onValueChange={(v) => set('assigned_to', v ?? MOCK_MEMBERS[0])}
+                onValueChange={(v) => set('assigned_to', v ?? defaultAssignee)}
                 disabled={loading}
               >
                 <SelectTrigger className="w-full">
-                  <SelectValue>{(v: string) => v || MOCK_MEMBERS[0]}</SelectValue>
+                  <SelectValue>
+                    {(v: string) => {
+                      const member = members.find((m) => m.user_id === v)
+                      return member ? memberLabel(member) : v
+                    }}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
-                  {MOCK_MEMBERS.map((m) => (
-                    <SelectItem key={m} value={m}>{m}</SelectItem>
+                  {members.map((m) => (
+                    <SelectItem key={m.user_id} value={m.user_id}>{memberLabel(m)}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>

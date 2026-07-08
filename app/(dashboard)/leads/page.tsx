@@ -1,60 +1,43 @@
-'use client'
-
-import { useState, useMemo, Suspense } from 'react'
-import { useSearchParams } from 'next/navigation'
-import { Plus, Users } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { Suspense } from 'react'
+import { redirect } from 'next/navigation'
+import { Users } from 'lucide-react'
 import { LeadsTable } from '@/components/leads/leads-table'
 import { LeadsFilters } from '@/components/leads/leads-filters'
-import { LeadForm } from '@/components/leads/lead-form'
 import { LeadsSkeleton } from '@/components/leads/leads-skeleton'
 import { LeadStatusBadge } from '@/components/leads/lead-status-badge'
-import { MOCK_LEADS } from '@/lib/mock-leads'
-import type { Lead, LeadStatus } from '@/types'
+import { NewLeadButton } from '@/components/leads/new-lead-button'
+import { createClient } from '@/lib/supabase/server'
+import { getActiveWorkspaceContext } from '@/lib/supabase/workspace-context'
+import { getLeads, getWorkspaceMembers } from '@/lib/supabase/queries'
+import type { LeadStatus } from '@/types'
 
-function LeadsContent() {
-  const searchParams = useSearchParams()
-  const [leads, setLeads] = useState<Lead[]>(MOCK_LEADS)
-  const [creating, setCreating] = useState(false)
+interface PageProps {
+  searchParams: Promise<{ q?: string; status?: string; assigned?: string }>
+}
 
-  const q = (searchParams.get('q') ?? '').toLowerCase()
-  const status = searchParams.get('status') as LeadStatus | null
-  const assigned = searchParams.get('assigned') ?? ''
+async function LeadsContent({ searchParams }: PageProps) {
+  const params = await searchParams
+  const supabase = await createClient()
+  const context = await getActiveWorkspaceContext(supabase)
+  if (!context) redirect('/login')
 
-  const filtered = useMemo(() => {
-    return leads.filter((l) => {
-      if (q && !l.name.toLowerCase().includes(q) && !(l.company ?? '').toLowerCase().includes(q)) {
-        return false
-      }
-      if (status && l.status !== status) return false
-      if (assigned && l.assigned_to !== assigned) return false
-      return true
-    })
-  }, [leads, q, status, assigned])
+  const status = (params.status as LeadStatus | undefined) || undefined
+  const [leads, allLeads, members] = await Promise.all([
+    getLeads(supabase, context.workspaceId, {
+      q: params.q,
+      status,
+      assigned: params.assigned,
+    }),
+    getLeads(supabase, context.workspaceId),
+    getWorkspaceMembers(supabase, context.workspaceId),
+  ])
 
-  // Count by status
-  const counts = useMemo(() => {
-    const map: Record<string, number> = {}
-    leads.forEach((l) => { map[l.status] = (map[l.status] ?? 0) + 1 })
-    return map
-  }, [leads])
+  const counts: Record<string, number> = {}
+  allLeads.forEach((l) => {
+    counts[l.status] = (counts[l.status] ?? 0) + 1
+  })
 
-  function handleCreate(data: Parameters<typeof LeadForm>[0]['onSave'] extends (d: infer D) => void ? D : never) {
-    const newLead: Lead = {
-      id: String(Date.now()),
-      workspace_id: 'ws-1',
-      ...data,
-      email: data.email || null,
-      phone: data.phone || null,
-      company: data.company || null,
-      role: data.role || null,
-      assigned_to: data.assigned_to || null,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    }
-    setLeads((prev) => [newLead, ...prev])
-    setCreating(false)
-  }
+  const hasFilters = !!(params.q || params.status || params.assigned)
 
   return (
     <div className="space-y-6">
@@ -63,13 +46,10 @@ function LeadsContent() {
         <div>
           <h1 className="text-2xl font-semibold text-foreground">Leads</h1>
           <p className="text-muted-foreground text-sm mt-0.5">
-            {leads.length} contatos no workspace
+            {allLeads.length} contatos no workspace
           </p>
         </div>
-        <Button onClick={() => setCreating(true)} className="shrink-0">
-          <Plus className="w-4 h-4 mr-1.5" />
-          Novo lead
-        </Button>
+        <NewLeadButton members={members} />
       </div>
 
       {/* Status summary */}
@@ -91,33 +71,26 @@ function LeadsContent() {
       </div>
 
       {/* Filters */}
-      <LeadsFilters />
+      <LeadsFilters members={members} />
 
       {/* Table */}
-      {filtered.length === 0 && (q || status || assigned) ? (
+      {leads.length === 0 && hasFilters ? (
         <div className="rounded-xl border border-border bg-card p-12 text-center">
           <p className="text-muted-foreground text-sm">
             Nenhum lead encontrado para os filtros aplicados.
           </p>
         </div>
       ) : (
-        <LeadsTable leads={filtered} />
+        <LeadsTable leads={leads} members={members} />
       )}
-
-      {/* Create dialog */}
-      <LeadForm
-        open={creating}
-        onClose={() => setCreating(false)}
-        onSave={handleCreate}
-      />
     </div>
   )
 }
 
-export default function LeadsPage() {
+export default function LeadsPage(props: PageProps) {
   return (
     <Suspense fallback={<LeadsSkeleton />}>
-      <LeadsContent />
+      <LeadsContent {...props} />
     </Suspense>
   )
 }
