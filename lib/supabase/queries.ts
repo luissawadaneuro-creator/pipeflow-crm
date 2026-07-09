@@ -1,6 +1,15 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '@/types/supabase'
-import type { Workspace, Lead, Deal, LeadStatus, DealStage, Member, Activity } from '@/types'
+import type {
+  Workspace,
+  Lead,
+  Deal,
+  LeadStatus,
+  DealStage,
+  Member,
+  Activity,
+  WorkspaceInvite,
+} from '@/types'
 
 export async function getUserWorkspaces(
   supabase: SupabaseClient<Database>,
@@ -31,6 +40,34 @@ export async function getWorkspaceMembers(
     email: m.email ?? undefined,
     full_name: m.full_name ?? undefined,
   }))
+}
+
+export async function getPendingInvites(
+  supabase: SupabaseClient<Database>,
+  workspaceId: string
+): Promise<WorkspaceInvite[]> {
+  const { data, error } = await supabase
+    .from('workspace_invites')
+    .select('*')
+    .eq('workspace_id', workspaceId)
+    .is('accepted_at', null)
+    .gt('expires_at', new Date().toISOString())
+    .order('created_at', { ascending: false })
+
+  if (error || !data) return []
+  return data
+}
+
+export async function countWorkspaceSeats(
+  supabase: SupabaseClient<Database>,
+  workspaceId: string
+): Promise<number> {
+  const { data, error } = await supabase.rpc('count_workspace_seats', {
+    p_workspace_id: workspaceId,
+  })
+
+  if (error || data === null) return 0
+  return data
 }
 
 export interface LeadFilters {

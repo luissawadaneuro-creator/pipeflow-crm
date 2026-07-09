@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -27,7 +27,17 @@ function validate(name: string, email: string, password: string): FieldErrors {
 }
 
 export default function SignupPage() {
+  return (
+    <Suspense>
+      <SignupForm />
+    </Suspense>
+  )
+}
+
+function SignupForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const redirectTo = searchParams.get('redirect')
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -52,8 +62,8 @@ export default function SignupPage() {
       return
     }
 
-    // After signup, go to onboarding to create the first workspace
-    router.push('/onboarding')
+    // Invited users skip onboarding — they join an existing workspace via the invite link
+    router.push(redirectTo || '/onboarding')
     router.refresh()
   }
 

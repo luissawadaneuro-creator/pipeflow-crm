@@ -295,6 +295,10 @@ export interface Database {
           full_name: string | null;
         }[];
       };
+      count_workspace_seats: {
+        Args: { p_workspace_id: string };
+        Returns: number;
+      };
     };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;
