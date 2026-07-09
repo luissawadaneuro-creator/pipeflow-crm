@@ -208,7 +208,7 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 | M5 | Pipeline | Kanban board with drag-and-drop | ✅ Done |
 | M6 | Activities | Timeline per lead (call/email/meeting/note) | ✅ Done |
 | M7 | Dashboard | Metrics cards + funnel chart | ⏳ Pending |
-| M8 | Invites | Email invites via Resend | ⏳ Pending |
+| M8 | Invites | Email invites via Resend | ✅ Done |
 | M9 | Stripe | Plans, checkout, webhook, portal | ⏳ Pending |
 | M10 | Landing | Public marketing page | ⏳ Pending |
 

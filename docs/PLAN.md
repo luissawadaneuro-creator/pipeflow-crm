@@ -333,7 +333,7 @@ feat: dashboard — metrics cards, sales funnel chart, upcoming deadlines
 
 ## M8 — Convite de Colaboradores
 
-**Branch:** `m8/invites`
+**Branch:** `feat/collaboration` (mesclada em `main`; o plano original previa `m8/invites`)
 **Objetivo:** Admin envia convite por e-mail; convidado cria conta (ou loga) e é adicionado ao workspace.
 
 ### Entregas
@@ -341,37 +341,41 @@ feat: dashboard — metrics cards, sales funnel chart, upcoming deadlines
 #### Banco de Dados
 - [x] Tabela `workspace_invites` — `id`, `workspace_id`, `email`, `role`, `token`, `invited_by`, `accepted_at`, `expires_at`, `created_at`
 - [x] RLS — apenas admin do workspace vê e cria convites
+- [x] Função SQL `count_workspace_seats(workspace_id)` — soma membros ativos + convites pendentes, usada no enforcement do limite do plano Free
 
 #### Instalação
 - [x] `npm install resend`
-- [ ] Configurar `RESEND_API_KEY` no `.env.local`
+- [x] Configurar `RESEND_API_KEY` no `.env.local`
 
 #### UI — Gestão de Membros
-- [ ] `app/(dashboard)/settings/members/page.tsx` — lista de membros + form de convite
-- [ ] `components/settings/members-list.tsx` — tabela com nome, e-mail, cargo, ações (remover/alterar role)
-- [ ] `components/settings/invite-form.tsx` — input de e-mail + select de papel + botão "Convidar"
-- [ ] Badge de convite pendente para e-mails ainda não aceitos
+- [x] `app/(dashboard)/settings/members/page.tsx` — lista de membros + form de convite
+- [x] `components/settings/members-list.tsx` — tabela com nome, e-mail, cargo, ações (remover/alterar role/revogar convite)
+- [x] `components/settings/invite-form.tsx` — input de e-mail + select de papel + botão "Convidar"
+- [x] Badge de convite pendente para e-mails ainda não aceitos
 
 #### UI — Aceite do Convite
-- [ ] `app/invite/[token]/page.tsx` — página pública de aceite
-- [ ] Se não logado: mostrar nome do workspace + botão "Criar conta" ou "Entrar"
-- [ ] Se logado: adicionar ao workspace e redirecionar
+- [x] `app/invite/[token]/page.tsx` + `components/invites/invite-accept-card.tsx` — página pública de aceite
+- [x] Se não logado: mostrar nome do workspace + botão "Criar conta" ou "Entrar" (propaga `?redirect=/invite/[token]` para login/signup)
+- [x] Se logado: adiciona ao workspace via `app/api/invites/[token]/route.ts` e redireciona
 
 #### Lógica
-- [ ] `lib/resend/emails.ts` — arquivo criado como stub (`buildInviteEmail` retorna string vazia), template ainda não implementado
-- [ ] Server Action `sendInvite(email, role)` — cria registro + envia e-mail via Resend
-- [ ] API Route `GET /api/invites/[token]` — valida token + adiciona membro + marca como aceito
-- [ ] Expiração de convite após 7 dias
+- [x] `lib/resend/emails.ts` — `buildInviteEmail` implementado (template HTML real)
+- [x] Server Action `sendInvite(email, role)` em `app/(dashboard)/settings/members/actions.ts` — cria registro + envia e-mail via Resend; bloqueia duplicidade de convite pendente e limite do plano Free
+- [x] API Route `GET /api/invites/[token]` — valida token/expiração/e-mail correspondente, verifica limite de novo (race condition), adiciona membro via `lib/supabase/admin.ts` (service role) e marca `accepted_at`
+- [x] Expiração de convite após 7 dias (`expires_at` default na tabela)
+- [x] Server Actions `updateMemberRole` e `removeMember` — protegem contra remover/rebaixar o último admin do workspace
+- [x] Limite do plano Free: máx. 2 membros (conta membros ativos + convites pendentes) — enforced tanto no envio quanto no aceite do convite
 
 #### Verificação
-- [ ] Admin envia convite → e-mail chega via Resend
-- [ ] Link do convite abre página de aceite
-- [ ] Após aceite, usuário aparece na lista de membros
-- [ ] Convite expirado exibe mensagem de erro
+- [x] Admin envia convite → e-mail chega via Resend (confirmado no Resend Dashboard; remetente de teste `onboarding@resend.dev`, pendente verificar domínio próprio antes de produção — ver M11)
+- [x] Link do convite abre página de aceite
+- [x] Após aceite, usuário aparece na lista de membros (confirmado via Supabase Studio/API: `workspace_members` e `workspace_invites.accepted_at`)
+- [x] Admin remove membro — confirmado no banco (registro removido de `workspace_members`)
+- [ ] Convite expirado exibe mensagem de erro — lógica implementada (`expires_at` checado na API route), não testado manualmente com convite realmente expirado
 
 ### Commit Final
 ```
-feat: invites — email invitations via Resend, invite acceptance flow, member management
+feat(collaboration): convites por email, papeis admin/membro, limite plano Free
 ```
 
 ---
@@ -521,7 +525,7 @@ chore: production deploy — Vercel config, env vars, Supabase prod, Stripe live
 | M5 | Pipeline Kanban | `m5/pipeline` | Drag-and-drop, deals |
 | M6 | Atividades | `m6/activities` | Timeline por lead |
 | M7 | Dashboard | `m7/dashboard` | Métricas, gráfico funil |
-| M8 | Convites | `m8/invites` | Resend, aceite de convite |
+| M8 | Convites | `feat/collaboration` | Resend, aceite de convite |
 | M9 | Stripe | `m9/stripe` | Planos, checkout, webhooks |
 | M10 | Landing Page | `m10/landing` | Marketing, SEO |
 | M11 | Deploy | `develop` → `main` | Produção |
