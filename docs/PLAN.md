@@ -382,46 +382,47 @@ feat(collaboration): convites por email, papeis admin/membro, limite plano Free
 
 ## M9 — Monetização com Stripe
 
-**Branch:** `m9/stripe`
+**Branch:** `feat/stripe-billing` (o plano original previa `m9/stripe`)
 **Objetivo:** Planos Free e Pro funcionando com checkout, webhook e portal de gerenciamento de assinatura.
 
 ### Entregas
 
 #### Instalação
-- [ ] `npm install stripe @stripe/stripe-js` — apenas `stripe` instalado, falta `@stripe/stripe-js`
-- [ ] Configurar variáveis Stripe no `.env.local`
-- [ ] Criar produto e preço no Stripe Dashboard (R$ 49/mês)
+- [x] `npm install stripe @stripe/stripe-js`
+- [x] Configurar variáveis Stripe no `.env.local`
+- [x] Criar produto e preço no Stripe Dashboard (R$ 49/mês)
 
 #### Banco de Dados
 - [x] Adicionar colunas em `workspaces`: `stripe_customer_id`, `stripe_subscription_id`, `plan_status` (active/canceled/trialing)
-- [ ] Atualizar RLS/checks de limite: max 2 membros e 50 leads no plano Free
+- [ ] Atualizar RLS/checks de limite: max 2 membros e 50 leads no plano Free — limite de membros já existe desde M8 (`count_workspace_seats`); limite de 50 leads ainda não implementado
 
 #### UI — Planos e Upgrade
-- [ ] `app/(dashboard)/settings/billing/page.tsx` — página de cobrança
-- [ ] `components/settings/plan-card.tsx` — card mostrando plano atual, uso (leads/membros) e botão de upgrade
-- [ ] `components/settings/pricing-cards.tsx` — comparação Free vs Pro
-- [ ] Botão "Gerenciar Assinatura" abre Customer Portal
-- [ ] Banner de limite atingido quando workspace Free chega ao limite
+- [x] `app/(dashboard)/settings/billing/page.tsx` — página de cobrança
+- [x] `components/settings/plan-card.tsx` — card mostrando plano atual, uso (leads/membros) e botão de upgrade
+- [ ] `components/settings/pricing-cards.tsx` — comparação Free vs Pro lado a lado (não implementado; `plan-card.tsx` mostra só o plano atual)
+- [x] Botão "Gerenciar Assinatura" abre Customer Portal
+- [ ] Banner de limite atingido quando workspace Free chega ao limite — mostra contagem de uso, mas sem banner de alerta dedicado
 
 #### Lógica
 - [x] `lib/stripe/client.ts` — instância do Stripe
-- [ ] Server Action `createCheckoutSession(workspaceId)` → redireciona para Stripe Checkout
-- [ ] Server Action `createPortalSession(workspaceId)` → redireciona para Customer Portal
-- [ ] `app/api/stripe/webhook/route.ts` — handler de webhooks:
-  - `checkout.session.completed` → atualiza `plan`, `stripe_customer_id`, `stripe_subscription_id`
-  - `customer.subscription.deleted` → downgrade para free
-  - `customer.subscription.updated` → atualiza status
+- [x] Server Action `createCheckoutSession()` em `app/(dashboard)/settings/billing/actions.ts` → redireciona para Stripe Checkout (usa workspace ativo do cookie, restrito a admin)
+- [x] Server Action `createPortalSession()` em `app/(dashboard)/settings/billing/actions.ts` → redireciona para Customer Portal
+- [x] `app/api/stripe/webhook/route.ts` — único Route Handler do fluxo de billing (necessário para validar a assinatura HMAC do Stripe; todo o resto usa Server Actions):
+  - `checkout.session.completed` → atualiza `plan`, `plan_status`, `stripe_customer_id`, `stripe_subscription_id`
+  - `customer.subscription.updated` → atualiza `plan_status` (active/trialing/canceled) e rebaixa `plan` para free se cancelada
+  - `customer.subscription.deleted` → downgrade para free, limpa `stripe_subscription_id`
 
 #### Limites do Plano Free (enforcement)
-- [ ] Server Action `createLead` verifica limite de 50 leads antes de inserir
-- [ ] Server Action `sendInvite` verifica limite de 2 membros antes de enviar
+- [ ] Server Action `createLead` verifica limite de 50 leads antes de inserir — não implementado
+- [x] Server Action `sendInvite` verifica limite de 2 membros antes de enviar — implementado em M8
 
 #### Verificação
-- [ ] Checkout redireciona para Stripe e volta após pagamento
-- [ ] Webhook atualiza `plan` do workspace para `pro`
-- [ ] Workspace Pro não tem limites de leads/membros
-- [ ] Cancelamento downgrade para Free via webhook
-- [ ] Customer Portal permite gerenciar assinatura
+- [x] `npm run build` sem erros de tipo
+- [ ] Checkout redireciona para Stripe e volta após pagamento — não testado manualmente (requer conta Stripe em modo teste)
+- [ ] Webhook atualiza `plan` do workspace para `pro` — não testado com Stripe CLI/evento real
+- [ ] Workspace Pro não tem limites de leads/membros — depende do enforcement de leads, ainda pendente
+- [ ] Cancelamento downgrade para Free via webhook — não testado manualmente
+- [ ] Customer Portal permite gerenciar assinatura — não testado manualmente
 
 ### Commit Final
 ```
