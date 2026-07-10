@@ -9,6 +9,7 @@ import { NewLeadButton } from '@/components/leads/new-lead-button'
 import { createClient } from '@/lib/supabase/server'
 import { getActiveWorkspaceContext } from '@/lib/supabase/workspace-context'
 import { getLeads, getWorkspaceMembers } from '@/lib/supabase/queries'
+import { FREE_PLAN_LEAD_LIMIT } from '@/lib/limits'
 import type { LeadStatus } from '@/types'
 
 interface PageProps {
@@ -22,7 +23,7 @@ async function LeadsContent({ searchParams }: PageProps) {
   if (!context) redirect('/login')
 
   const status = (params.status as LeadStatus | undefined) || undefined
-  const [leads, allLeads, members] = await Promise.all([
+  const [leads, allLeads, members, { data: workspace }] = await Promise.all([
     getLeads(supabase, context.workspaceId, {
       q: params.q,
       status,
@@ -30,7 +31,11 @@ async function LeadsContent({ searchParams }: PageProps) {
     }),
     getLeads(supabase, context.workspaceId),
     getWorkspaceMembers(supabase, context.workspaceId),
+    supabase.from('workspaces').select('plan').eq('id', context.workspaceId).single(),
   ])
+
+  const plan = workspace?.plan ?? 'free'
+  const leadLimitReached = plan === 'free' && allLeads.length >= FREE_PLAN_LEAD_LIMIT
 
   const counts: Record<string, number> = {}
   allLeads.forEach((l) => {
@@ -46,11 +51,26 @@ async function LeadsContent({ searchParams }: PageProps) {
         <div>
           <h1 className="text-2xl font-semibold text-foreground">Leads</h1>
           <p className="text-muted-foreground text-sm mt-0.5">
-            {allLeads.length} contatos no workspace
+            {plan === 'free'
+              ? `${allLeads.length} de ${FREE_PLAN_LEAD_LIMIT} leads usados no plano Free`
+              : `${allLeads.length} contatos no workspace`}
           </p>
         </div>
-        <NewLeadButton members={members} />
+        <NewLeadButton members={members} disabled={leadLimitReached} />
       </div>
+
+      {leadLimitReached && (
+        <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3">
+          <p className="text-sm text-red-500">
+            Você atingiu o limite de {FREE_PLAN_LEAD_LIMIT} leads do plano Free. Faça upgrade
+            para o plano Pro em{' '}
+            <a href="/settings/billing" className="underline">
+              Cobrança
+            </a>{' '}
+            para adicionar mais.
+          </p>
+        </div>
+      )}
 
       {/* Status summary */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">

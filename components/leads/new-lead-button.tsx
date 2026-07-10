@@ -11,9 +11,10 @@ import type { Member } from '@/types'
 
 interface NewLeadButtonProps {
   members: Member[]
+  disabled?: boolean
 }
 
-export function NewLeadButton({ members }: NewLeadButtonProps) {
+export function NewLeadButton({ members, disabled }: NewLeadButtonProps) {
   const router = useRouter()
   const [open, setOpen] = useState(false)
 
@@ -30,11 +31,13 @@ export function NewLeadButton({ members }: NewLeadButtonProps) {
 
   return (
     <>
-      <Button onClick={() => setOpen(true)} className="shrink-0">
+      <Button onClick={() => setOpen(true)} className="shrink-0" disabled={disabled}>
         <Plus className="w-4 h-4 mr-1.5" />
         Novo lead
       </Button>
-      <LeadForm open={open} onClose={() => setOpen(false)} onSave={handleSave} members={members} />
+      {!disabled && (
+        <LeadForm open={open} onClose={() => setOpen(false)} onSave={handleSave} members={members} />
+      )}
     </>
   )
 }

@@ -19,12 +19,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid signature.' }, { status: 400 })
   }
 
+  console.log(`[stripe webhook] received event: ${event.type}`)
+
   const admin = createAdminClient()
 
   switch (event.type) {
     case 'checkout.session.completed': {
       const session = event.data.object as Stripe.Checkout.Session
       const workspaceId = session.metadata?.workspace_id ?? session.client_reference_id
+      const userId = session.metadata?.user_id
       if (!workspaceId) {
         console.error('[stripe webhook] checkout.session.completed missing workspace_id')
         break
@@ -35,7 +38,7 @@ export async function POST(request: Request) {
       const customerId =
         typeof session.customer === 'string' ? session.customer : session.customer?.id
 
-      await admin
+      const { error: checkoutError } = await admin
         .from('workspaces')
         .update({
           plan: 'pro',
@@ -44,6 +47,14 @@ export async function POST(request: Request) {
           stripe_subscription_id: subscriptionId ?? null,
         })
         .eq('id', workspaceId)
+
+      if (checkoutError) {
+        console.error('[stripe webhook] checkout.session.completed update failed:', checkoutError)
+      }
+
+      if (userId) {
+        console.log(`[stripe webhook] checkout completed by user ${userId} for workspace ${workspaceId}`)
+      }
 
       break
     }
@@ -58,13 +69,17 @@ export async function POST(request: Request) {
 
       const planStatus = mapStripeStatus(subscription.status)
 
-      await admin
+      const { error: subUpdatedError } = await admin
         .from('workspaces')
         .update({
           plan_status: planStatus,
           plan: planStatus === 'canceled' ? 'free' : 'pro',
         })
         .eq('id', workspaceId)
+
+      if (subUpdatedError) {
+        console.error('[stripe webhook] customer.subscription.updated update failed:', subUpdatedError)
+      }
 
       break
     }
@@ -77,7 +92,7 @@ export async function POST(request: Request) {
         break
       }
 
-      await admin
+      const { error: subDeletedError } = await admin
         .from('workspaces')
         .update({
           plan: 'free',
@@ -85,6 +100,39 @@ export async function POST(request: Request) {
           stripe_subscription_id: null,
         })
         .eq('id', workspaceId)
+
+      if (subDeletedError) {
+        console.error('[stripe webhook] customer.subscription.deleted update failed:', subDeletedError)
+      }
+
+      break
+    }
+
+    case 'invoice.payment_failed': {
+      const invoice = event.data.object as Stripe.Invoice
+      const subscriptionRef = invoice.parent?.subscription_details?.subscription
+      const subscriptionId = typeof subscriptionRef === 'string' ? subscriptionRef : subscriptionRef?.id
+
+      if (!subscriptionId) {
+        console.error('[stripe webhook] invoice.payment_failed missing subscription id')
+        break
+      }
+
+      const subscription = await stripe.subscriptions.retrieve(subscriptionId)
+      const workspaceId = subscription.metadata?.workspace_id
+      if (!workspaceId) {
+        console.error('[stripe webhook] invoice.payment_failed missing workspace_id')
+        break
+      }
+
+      const { error: invoiceFailedError } = await admin
+        .from('workspaces')
+        .update({ plan_status: 'past_due' })
+        .eq('id', workspaceId)
+
+      if (invoiceFailedError) {
+        console.error('[stripe webhook] invoice.payment_failed update failed:', invoiceFailedError)
+      }
 
       break
     }
@@ -96,8 +144,11 @@ export async function POST(request: Request) {
   return NextResponse.json({ received: true })
 }
 
-function mapStripeStatus(status: Stripe.Subscription.Status): 'active' | 'canceled' | 'trialing' {
+function mapStripeStatus(
+  status: Stripe.Subscription.Status
+): 'active' | 'canceled' | 'trialing' | 'past_due' {
   if (status === 'trialing') return 'trialing'
   if (status === 'active') return 'active'
+  if (status === 'past_due') return 'past_due'
   return 'canceled'
 }

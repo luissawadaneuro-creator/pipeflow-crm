@@ -2,10 +2,9 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getActiveWorkspaceContext } from '@/lib/supabase/workspace-context'
 import { getWorkspaceMembers } from '@/lib/supabase/queries'
+import { FREE_PLAN_MEMBER_LIMIT, FREE_PLAN_LEAD_LIMIT } from '@/lib/limits'
 import { PlanCard } from '@/components/settings/plan-card'
-
-const FREE_PLAN_MEMBER_LIMIT = 2
-const FREE_PLAN_LEAD_LIMIT = 50
+import { PricingComparison } from '@/components/settings/pricing-comparison'
 
 export default async function BillingPage() {
   const supabase = await createClient()
@@ -49,6 +48,8 @@ export default async function BillingPage() {
         leadCount={leadCount ?? 0}
         leadLimit={FREE_PLAN_LEAD_LIMIT}
       />
+
+      <PricingComparison currentPlan={workspace.plan} />
     </div>
   )
 }

@@ -50,8 +50,8 @@ export async function createCheckoutSession(): Promise<BillingActionResult> {
     success_url: `${process.env.NEXT_PUBLIC_APP_URL}/settings/billing?checkout=success`,
     cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/settings/billing?checkout=canceled`,
     client_reference_id: workspace.id,
-    metadata: { workspace_id: workspace.id },
-    subscription_data: { metadata: { workspace_id: workspace.id } },
+    metadata: { workspace_id: workspace.id, user_id: context.userId },
+    subscription_data: { metadata: { workspace_id: workspace.id, user_id: context.userId } },
   })
 
   if (!session.url) return { error: 'Não foi possível iniciar o checkout. Tente novamente.' }

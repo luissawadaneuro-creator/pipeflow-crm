@@ -2,10 +2,9 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getActiveWorkspaceContext } from '@/lib/supabase/workspace-context'
 import { getWorkspaceMembers, getPendingInvites } from '@/lib/supabase/queries'
+import { FREE_PLAN_MEMBER_LIMIT } from '@/lib/limits'
 import { MembersList } from '@/components/settings/members-list'
 import { InviteForm } from '@/components/settings/invite-form'
-
-const FREE_PLAN_MEMBER_LIMIT = 2
 
 export default async function MembersPage() {
   const supabase = await createClient()

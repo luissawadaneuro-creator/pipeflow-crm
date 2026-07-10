@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Loader2, Sparkles } from 'lucide-react'
+import { AlertTriangle, Loader2, Sparkles } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -10,7 +10,7 @@ import type { WorkspacePlan } from '@/types'
 
 interface PlanCardProps {
   plan: WorkspacePlan
-  planStatus: 'active' | 'canceled' | 'trialing' | null
+  planStatus: 'active' | 'canceled' | 'trialing' | 'past_due' | null
   hasStripeCustomer: boolean
   isAdmin: boolean
   memberCount: number
@@ -64,7 +64,14 @@ export function PlanCard({
           </div>
           {plan === 'pro' && planStatus && (
             <p className="text-xs text-muted-foreground mt-1">
-              Status: {planStatus === 'active' ? 'ativa' : planStatus === 'trialing' ? 'em teste' : 'cancelada'}
+              Status:{' '}
+              {planStatus === 'active'
+                ? 'ativa'
+                : planStatus === 'trialing'
+                  ? 'em teste'
+                  : planStatus === 'past_due'
+                    ? 'pagamento pendente'
+                    : 'cancelada'}
             </p>
           )}
         </div>
@@ -85,6 +92,23 @@ export function PlanCard({
           </Button>
         )}
       </div>
+
+      {plan === 'pro' && planStatus === 'past_due' && (
+        <div className="flex items-start gap-3 rounded-lg border border-red-500/30 bg-red-500/10 p-3">
+          <AlertTriangle className="w-4 h-4 text-red-500 mt-0.5 shrink-0" />
+          <div className="space-y-2">
+            <p className="text-sm text-red-500">
+              A última cobrança da sua assinatura falhou. Atualize a forma de pagamento para
+              evitar o cancelamento do plano Pro.
+            </p>
+            {isAdmin && hasStripeCustomer && (
+              <Button size="sm" variant="outline" onClick={handleManageSubscription} disabled={loading}>
+                {loading ? 'Abrindo…' : 'Atualizar pagamento'}
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="rounded-lg border border-border p-3">
