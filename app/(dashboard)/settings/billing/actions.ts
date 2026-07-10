@@ -84,3 +84,50 @@ export async function createPortalSession(): Promise<BillingActionResult> {
 
   redirect(session.url)
 }
+
+export async function reactivateSubscription(): Promise<BillingActionResult> {
+  const supabase = await createClient()
+  const context = await getActiveWorkspaceContext(supabase)
+  if (!context) return { error: 'Sessão expirada. Faça login novamente.' }
+
+  const isAdmin = await requireAdminWorkspace(context.workspaceId, context.userId)
+  if (!isAdmin) return { error: 'Apenas admins podem gerenciar a assinatura do workspace.' }
+
+  const { data: workspace } = await supabase
+    .from('workspaces')
+    .select('stripe_subscription_id')
+    .eq('id', context.workspaceId)
+    .single()
+
+  if (!workspace?.stripe_subscription_id) {
+    return { error: 'Este workspace não tem uma assinatura ativa para reativar.' }
+  }
+
+  console.log(
+    `[reactivateSubscription] updating subscription ${workspace.stripe_subscription_id} for workspace ${context.workspaceId}`
+  )
+
+  try {
+    const updated = await stripe.subscriptions.update(workspace.stripe_subscription_id, {
+      cancel_at_period_end: false,
+    })
+    console.log(
+      `[reactivateSubscription] stripe response: status=${updated.status} cancel_at_period_end=${updated.cancel_at_period_end} cancel_at=${updated.cancel_at}`
+    )
+  } catch (err) {
+    console.error('[reactivateSubscription] stripe.subscriptions.update failed:', err)
+    return { error: 'Não foi possível reativar a assinatura no Stripe. Tente novamente.' }
+  }
+
+  const { error: dbError } = await supabase
+    .from('workspaces')
+    .update({ cancel_at: null })
+    .eq('id', context.workspaceId)
+
+  if (dbError) {
+    console.error('[reactivateSubscription] supabase update failed:', dbError)
+    return { error: 'Assinatura reativada no Stripe, mas houve erro ao atualizar o workspace.' }
+  }
+
+  return {}
+}

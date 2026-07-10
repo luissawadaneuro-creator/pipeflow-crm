@@ -395,11 +395,12 @@ feat(collaboration): convites por email, papeis admin/membro, limite plano Free
 #### Banco de Dados
 - [x] Adicionar colunas em `workspaces`: `stripe_customer_id`, `stripe_subscription_id`, `plan_status` (active/canceled/trialing/past_due)
 - [x] Migration `20260709120000_workspace_plan_status_past_due.sql` — adiciona `past_due` à CHECK constraint de `plan_status`
+- [x] Migration `20260710090000_workspace_cancel_at.sql` — coluna `cancel_at` para rastrear cancelamento agendado (fim do período)
 - [x] Atualizar RLS/checks de limite: max 2 membros e 50 leads no plano Free — centralizado em `lib/limits.ts` (`canAddMember`, `canAddLead`)
 
 #### UI — Planos e Upgrade
 - [x] `app/(dashboard)/settings/billing/page.tsx` — página de cobrança
-- [x] `components/settings/plan-card.tsx` — card mostrando plano atual, uso (leads/membros), status da assinatura (incl. "pagamento pendente") e botão de upgrade
+- [x] `components/settings/plan-card.tsx` — card mostrando plano atual, uso (leads/membros), status da assinatura (incl. "pagamento pendente"), aviso de cancelamento agendado com botão "Reativar assinatura", e botão de upgrade
 - [x] `components/settings/pricing-comparison.tsx` — comparação Free vs Pro lado a lado
 - [x] Botão "Gerenciar Assinatura" abre Customer Portal
 - [x] Banner de limite atingido: `plan-card.tsx` (pagamento pendente/past_due) e `app/(dashboard)/leads/page.tsx` (50/50 leads no Free, com botão "Novo lead" desabilitado)
@@ -409,10 +410,11 @@ feat(collaboration): convites por email, papeis admin/membro, limite plano Free
 - [x] `lib/limits.ts` — `FREE_PLAN_MEMBER_LIMIT`, `FREE_PLAN_LEAD_LIMIT`, `canAddMember()`, `canAddLead()` (fonte única, reaproveitada por billing, members e leads)
 - [x] Server Action `createCheckoutSession()` em `app/(dashboard)/settings/billing/actions.ts` → redireciona para Stripe Checkout (usa workspace ativo do cookie, restrito a admin; metadata inclui `workspace_id` e `user_id`)
 - [x] Server Action `createPortalSession()` em `app/(dashboard)/settings/billing/actions.ts` → redireciona para Customer Portal
+- [x] Server Action `reactivateSubscription()` — reverte `cancel_at_period_end` no Stripe e limpa `cancel_at` no workspace; loga resposta do Stripe e erros no terminal
 - [x] `app/api/stripe/webhook/route.ts` — único Route Handler do fluxo de billing (necessário para validar a assinatura HMAC do Stripe; todo o resto usa Server Actions):
-  - `checkout.session.completed` → atualiza `plan`, `plan_status`, `stripe_customer_id`, `stripe_subscription_id`
-  - `customer.subscription.updated` → atualiza `plan_status` (active/trialing/past_due/canceled) e rebaixa `plan` para free se cancelada
-  - `customer.subscription.deleted` → downgrade para free, limpa `stripe_subscription_id`
+  - `checkout.session.completed` → atualiza `plan`, `plan_status`, `stripe_customer_id`, `stripe_subscription_id`, limpa `cancel_at`
+  - `customer.subscription.updated` → atualiza `plan_status` (active/trialing/past_due/canceled), rebaixa `plan` para free se cancelada, grava `cancel_at` quando `cancel_at_period_end` é true
+  - `customer.subscription.deleted` → downgrade para free, limpa `stripe_subscription_id` e `cancel_at`
   - `invoice.payment_failed` → marca `plan_status: 'past_due'` (busca a subscription para resolver `workspace_id`)
   - Erros de update no Supabase agora são logados (`console.error`), evitando falhas silenciosas com `200 { received: true }`
 
@@ -425,8 +427,8 @@ feat(collaboration): convites por email, papeis admin/membro, limite plano Free
 - [x] Checkout redireciona para Stripe e volta após pagamento — testado manualmente em modo teste
 - [x] Webhook atualiza `plan` do workspace para `pro` — testado com Stripe CLI (`stripe listen --forward-to localhost:3000/api/stripe/webhook`) e evento real de checkout
 - [x] Workspace Pro não tem limites de leads/membros — `canAddLead`/`canAddMember` retornam `allowed: true` para plano != free
-- [ ] Cancelamento downgrade para Free via webhook — não testado manualmente (lógica implementada e coberta pelo mesmo padrão do checkout)
-- [ ] Customer Portal permite gerenciar assinatura — não testado manualmente
+- [x] Cancelamento downgrade para Free via webhook — testado manualmente via Customer Portal (cancelamento agendado para fim do período); `customer.subscription.updated` grava `cancel_at` e a UI exibe o aviso com opção de reativar
+- [x] Customer Portal permite gerenciar assinatura — testado manualmente (portal abre, cancelamento e reativação confirmados)
 
 ### Commit Final
 ```

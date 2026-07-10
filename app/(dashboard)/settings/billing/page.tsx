@@ -14,7 +14,7 @@ export default async function BillingPage() {
   const [{ data: workspace }, members, { count: leadCount }] = await Promise.all([
     supabase
       .from('workspaces')
-      .select('plan, plan_status, stripe_customer_id')
+      .select('plan, plan_status, stripe_customer_id, cancel_at')
       .eq('id', context.workspaceId)
       .single(),
     getWorkspaceMembers(supabase, context.workspaceId),
@@ -41,6 +41,7 @@ export default async function BillingPage() {
       <PlanCard
         plan={workspace.plan}
         planStatus={workspace.plan_status}
+        cancelAt={workspace.cancel_at}
         hasStripeCustomer={!!workspace.stripe_customer_id}
         isAdmin={isAdmin}
         memberCount={members.length}

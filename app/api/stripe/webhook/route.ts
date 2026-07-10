@@ -45,6 +45,7 @@ export async function POST(request: Request) {
           plan_status: 'active',
           stripe_customer_id: customerId ?? null,
           stripe_subscription_id: subscriptionId ?? null,
+          cancel_at: null,
         })
         .eq('id', workspaceId)
 
@@ -68,12 +69,16 @@ export async function POST(request: Request) {
       }
 
       const planStatus = mapStripeStatus(subscription.status)
+      const cancelAt = subscription.cancel_at_period_end && subscription.cancel_at
+        ? new Date(subscription.cancel_at * 1000).toISOString()
+        : null
 
       const { error: subUpdatedError } = await admin
         .from('workspaces')
         .update({
           plan_status: planStatus,
           plan: planStatus === 'canceled' ? 'free' : 'pro',
+          cancel_at: cancelAt,
         })
         .eq('id', workspaceId)
 
@@ -98,6 +103,7 @@ export async function POST(request: Request) {
           plan: 'free',
           plan_status: 'canceled',
           stripe_subscription_id: null,
+          cancel_at: null,
         })
         .eq('id', workspaceId)
 

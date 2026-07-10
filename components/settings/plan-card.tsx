@@ -1,16 +1,22 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { AlertTriangle, Loader2, Sparkles } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { createCheckoutSession, createPortalSession } from '@/app/(dashboard)/settings/billing/actions'
+import {
+  createCheckoutSession,
+  createPortalSession,
+  reactivateSubscription,
+} from '@/app/(dashboard)/settings/billing/actions'
 import type { WorkspacePlan } from '@/types'
 
 interface PlanCardProps {
   plan: WorkspacePlan
   planStatus: 'active' | 'canceled' | 'trialing' | 'past_due' | null
+  cancelAt: string | null
   hasStripeCustomer: boolean
   isAdmin: boolean
   memberCount: number
@@ -22,6 +28,7 @@ interface PlanCardProps {
 export function PlanCard({
   plan,
   planStatus,
+  cancelAt,
   hasStripeCustomer,
   isAdmin,
   memberCount,
@@ -29,6 +36,7 @@ export function PlanCard({
   leadCount,
   leadLimit,
 }: PlanCardProps) {
+  const router = useRouter()
   const [loading, setLoading] = useState(false)
 
   async function handleSubscribe() {
@@ -48,6 +56,18 @@ export function PlanCard({
       setLoading(false)
       toast.error(result.error)
     }
+  }
+
+  async function handleReactivate() {
+    setLoading(true)
+    const result = await reactivateSubscription()
+    setLoading(false)
+    if (result?.error) {
+      toast.error(result.error)
+      return
+    }
+    toast.success('Assinatura reativada.')
+    router.refresh()
   }
 
   return (
@@ -92,6 +112,24 @@ export function PlanCard({
           </Button>
         )}
       </div>
+
+      {plan === 'pro' && cancelAt && (
+        <div className="flex items-start gap-3 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3">
+          <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
+          <div className="space-y-2">
+            <p className="text-sm text-amber-500">
+              Sua assinatura foi cancelada e o plano Pro fica ativo até{' '}
+              {new Date(cancelAt).toLocaleDateString('pt-BR')}. Depois disso o workspace volta
+              para o plano Free.
+            </p>
+            {isAdmin && (
+              <Button size="sm" variant="outline" onClick={handleReactivate} disabled={loading}>
+                {loading ? 'Reativando…' : 'Reativar assinatura'}
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
 
       {plan === 'pro' && planStatus === 'past_due' && (
         <div className="flex items-start gap-3 rounded-lg border border-red-500/30 bg-red-500/10 p-3">
