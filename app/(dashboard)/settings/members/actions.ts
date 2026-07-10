@@ -3,12 +3,10 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { getActiveWorkspaceContext } from '@/lib/supabase/workspace-context'
-import { countWorkspaceSeats } from '@/lib/supabase/queries'
+import { canAddMember, FREE_PLAN_MEMBER_LIMIT } from '@/lib/limits'
 import { resend } from '@/lib/resend/client'
 import { buildInviteEmail } from '@/lib/resend/emails'
 import type { WorkspaceRole } from '@/types'
-
-const FREE_PLAN_MEMBER_LIMIT = 2
 
 export interface MemberActionResult {
   error?: string
@@ -32,12 +30,10 @@ export async function sendInvite(email: string, role: WorkspaceRole): Promise<Me
 
   if (!workspace) return { error: 'Workspace não encontrado.' }
 
-  if (workspace.plan === 'free') {
-    const seats = await countWorkspaceSeats(supabase, context.workspaceId)
-    if (seats >= FREE_PLAN_MEMBER_LIMIT) {
-      return {
-        error: `O plano Free permite no máximo ${FREE_PLAN_MEMBER_LIMIT} membros. Faça upgrade para o plano Pro para convidar mais pessoas.`,
-      }
+  const memberLimit = await canAddMember(supabase, context.workspaceId, workspace.plan)
+  if (!memberLimit.allowed) {
+    return {
+      error: `O plano Free permite no máximo ${FREE_PLAN_MEMBER_LIMIT} membros. Faça upgrade para o plano Pro para convidar mais pessoas.`,
     }
   }
 

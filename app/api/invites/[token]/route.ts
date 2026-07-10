@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-
-const FREE_PLAN_MEMBER_LIMIT = 2
+import { FREE_PLAN_MEMBER_LIMIT } from '@/lib/limits'
 
 export async function GET(request: Request, { params }: { params: Promise<{ token: string }> }) {
   const { token } = await params

@@ -18,7 +18,7 @@ export interface Workspace {
   owner_id: string
   stripe_customer_id: string | null
   stripe_subscription_id: string | null
-  plan_status: 'active' | 'canceled' | 'trialing' | null
+  plan_status: 'active' | 'canceled' | 'trialing' | 'past_due' | null
   created_at: string
 }
 

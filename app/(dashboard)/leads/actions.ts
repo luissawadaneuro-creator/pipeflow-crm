@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { getActiveWorkspaceContext } from '@/lib/supabase/workspace-context'
+import { canAddLead, FREE_PLAN_LEAD_LIMIT } from '@/lib/limits'
 import type { LeadStatus } from '@/types'
 
 export interface LeadActionResult {
@@ -24,6 +25,21 @@ export async function createLead(data: LeadInput): Promise<LeadActionResult> {
   const supabase = await createClient()
   const context = await getActiveWorkspaceContext(supabase)
   if (!context) return { error: 'Sessão expirada. Faça login novamente.' }
+
+  const { data: workspace } = await supabase
+    .from('workspaces')
+    .select('plan')
+    .eq('id', context.workspaceId)
+    .single()
+
+  if (!workspace) return { error: 'Workspace não encontrado.' }
+
+  const leadLimit = await canAddLead(supabase, context.workspaceId, workspace.plan)
+  if (!leadLimit.allowed) {
+    return {
+      error: `O plano Free permite no máximo ${FREE_PLAN_LEAD_LIMIT} leads. Faça upgrade para o plano Pro para adicionar mais.`,
+    }
+  }
 
   const { data: lead, error } = await supabase
     .from('leads')
